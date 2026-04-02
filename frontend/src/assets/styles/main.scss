@@ -1,0 +1,229 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #303133;
+  background-color: #f5f7fa;
+}
+
+.el-card {
+  border-radius: 8px;
+}
+
+.el-button {
+  border-radius: 4px;
+}
+
+.el-tag {
+  border-radius: 4px;
+}
+
+// 页面布局
+.page-container {
+  padding: 20px;
+}
+
+// 统计卡片
+.stats-card {
+  .stats-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #409eff;
+  }
+  .stats-label {
+    font-size: 14px;
+    color: #909399;
+    margin-top: 8px;
+  }
+}
+
+// 画像标签
+.profile-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 4px;
+  border-radius: 16px;
+  font-size: 12px;
+  
+  &.academic {
+    background: #ecf5ff;
+    color: #409eff;
+  }
+  
+  &.practice {
+    background: #f0f9eb;
+    color: #67c23a;
+  }
+  
+  &.suggestion {
+    background: #fef0f0;
+    color: #f56c6c;
+  }
+}
+
+// 能力指示器
+.ability-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .meter-bar {
+    flex: 1;
+    height: 8px;
+    background: #ebeef5;
+    border-radius: 4px;
+    overflow: hidden;
+    
+    .meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #409eff, #67c23a);
+      transition: width 0.3s;
+    }
+  }
+  
+  .meter-value {
+    min-width: 40px;
+    text-align: right;
+    font-weight: bold;
+  }
+}
+
+// 时间线
+.timeline {
+  position: relative;
+  padding-left: 24px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dcdfe6;
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      background: #409eff;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+    
+    .timeline-date {
+      font-size: 12px;
+      color: #909399;
+    }
+    
+    .timeline-content {
+      margin-top: 4px;
+      padding: 12px;
+      background: #f5f7fa;
+      border-radius: 4px;
+    }
+  }
+}
+
+// 雷达图容器
+.radar-container {
+  width: 100%;
+  height: 300px;
+}
+
+// 知识图谱节点
+.graph-node {
+  padding: 8px 16px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.student {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+  }
+  
+  &.course {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #fff;
+  }
+  
+  &.knowledge {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+  }
+  
+  &.activity {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: #fff;
+  }
+}
+
+// 评分星星
+.score-stars {
+  display: inline-flex;
+  gap: 2px;
+  
+  .star {
+    color: #e6e6e6;
+    
+    &.active {
+      color: #f7ba2a;
+    }
+  }
+}
+
+// 动画
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// 滚动条
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
