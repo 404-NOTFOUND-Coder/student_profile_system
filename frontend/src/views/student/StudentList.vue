@@ -17,7 +17,7 @@
           <el-input v-model="queryForm.name" placeholder="请输入姓名" clearable />
         </el-form-item>
         <el-form-item label="学院">
-          <el-select v-model="queryForm.college" placeholder="请选择学院" clearable>
+          <el-select v-model="queryForm.college" placeholder="请选择学院" clearable class="select-wide">
             <el-option label="计算机学院" value="计算机学院" />
             <el-option label="软件学院" value="软件学院" />
             <el-option label="信息学院" value="信息学院" />
@@ -27,7 +27,7 @@
           <el-input v-model="queryForm.major" placeholder="请输入专业" clearable />
         </el-form-item>
         <el-form-item label="入学年份">
-          <el-select v-model="queryForm.enrollmentYear" placeholder="请选择年份" clearable>
+          <el-select v-model="queryForm.enrollmentYear" placeholder="请选择年份" clearable class="select-wide">
             <el-option v-for="year in years" :key="year" :label="year" :value="year" />
           </el-select>
         </el-form-item>
@@ -228,10 +228,21 @@ const dialogTitle = computed(() => isEdit.value ? '编辑学生' : '新增学生
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await studentApi.list({ ...queryForm, ...pagination })
-    if (res.code === 200) {
+    const params = {
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize,
+      name: queryForm.name,
+      college: queryForm.college,
+      major: queryForm.major,
+      enrollmentYear: queryForm.enrollmentYear
+    }
+    console.log('请求参数:', params)
+    const res = await studentApi.list(params)
+    console.log('响应结果:', res)
+    if (res.code === 200 && res.data) {
       tableData.value = res.data.records || res.data
       pagination.total = res.data.total || tableData.value.length
+      console.log('表格数据:', tableData.value, '总数:', pagination.total)
     }
   } catch (error) {
     console.error('获取列表失败:', error)
@@ -332,6 +343,10 @@ onMounted(() => {
 
 .search-form {
   margin-bottom: 20px;
+
+  .select-wide {
+    width: 160px;
+  }
 }
 
 .pagination {

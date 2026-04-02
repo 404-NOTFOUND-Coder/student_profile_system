@@ -142,21 +142,21 @@ export const statsApi = {
    * 获取预警列表
    */
   getWarningList(params) {
-    return request.get('/warning/list', { params })
+    return request.get('/dashboard/warnings', { params })
   },
 
   /**
    * 获取画像示例列表
    */
   getProfileExamples(params) {
-    return request.get('/profile/examples', { params })
+    return request.get('/dashboard/profile-examples', { params })
   },
 
   /**
    * 获取学院统计数据
    */
   statsByCollege() {
-    return request.get('/student/stats/college')
+    return request.get('/dashboard/college-stats')
   },
 
   /**

@@ -46,14 +46,16 @@ public class DashboardController {
             // 平均GPA (从有成绩的学生中计算)
             Double avgGpa = calculateAvgGpa();
 
-            // 预警数量
-            // 暂时返回0，实际需要查询预警表
-            Long warningCount = 0L;
+            // 预警数量（学业评分低于85分的学生）
+            QueryWrapper<Student> warningWrapper = new QueryWrapper<>();
+            warningWrapper.and(w -> w.lt("profile_score", 85).or().isNull("profile_score"));
+            warningWrapper.eq("student_status", 1);
+            Long warningCount = studentMapper.selectCount(warningWrapper);
 
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalStudents", totalStudents != null ? totalStudents : 0);
             stats.put("activeStudents", activeStudents != null ? activeStudents : 0);
-            stats.put("warningCount", warningCount);
+            stats.put("warningCount", warningCount != null ? warningCount : 0);
             stats.put("avgGpa", avgGpa != null ? avgGpa : 0.0);
 
             return R.ok(stats);
@@ -72,9 +74,10 @@ public class DashboardController {
         try {
             List<Map<String, Object>> warnings = new ArrayList<>();
 
-            // 从数据库获取有预警的学生
+            // 从数据库获取有预警的学生（学业评分低于85分的学生）
             QueryWrapper<Student> wrapper = new QueryWrapper<>();
-            wrapper.apply("profile_score < 60 OR profile_score IS NULL");
+            wrapper.and(w -> w.lt("profile_score", 85).or().isNull("profile_score"));
+            wrapper.eq("student_status", 1);
             wrapper.last("LIMIT " + limit);
             List<Student> students = studentMapper.selectList(wrapper);
 
@@ -82,9 +85,27 @@ public class DashboardController {
                 Map<String, Object> warning = new HashMap<>();
                 warning.put("studentNo", student.getStudentNo());
                 warning.put("studentName", student.getName());
+                warning.put("college", student.getCollege());
+                warning.put("major", student.getMajor());
                 warning.put("warningType", "成绩预警");
-                warning.put("level", student.getProfileScore() != null && student.getProfileScore() < 50 ? 3 : 2);
-                warning.put("levelName", student.getProfileScore() != null && student.getProfileScore() < 50 ? "严重" : "较重");
+                // 根据分数判断等级
+                if (student.getProfileScore() == null) {
+                    warning.put("level", 3);
+                    warning.put("levelName", "严重");
+                    warning.put("warningMessage", "暂无学业评分，需要进行学业评估");
+                } else if (student.getProfileScore() < 80) {
+                    warning.put("level", 3);
+                    warning.put("levelName", "严重");
+                    warning.put("warningMessage", "学业评分偏低，需要重点关注");
+                } else if (student.getProfileScore() < 85) {
+                    warning.put("level", 2);
+                    warning.put("levelName", "较重");
+                    warning.put("warningMessage", "学业评分偏低，建议加强学业辅导");
+                } else {
+                    warning.put("level", 1);
+                    warning.put("levelName", "一般");
+                    warning.put("warningMessage", "学业评分有提升空间");
+                }
                 warning.put("createTime", new Date());
                 warnings.add(warning);
             }
@@ -124,27 +145,38 @@ public class DashboardController {
                 profile.put("college", student.getCollege());
                 profile.put("major", student.getMajor());
 
-                // 根据评分判断画像类型
+                // 根据评分判断画像类型（profile_score 是百分制，转换为4分制）
                 Double score = student.getProfileScore();
+                Double gpa = score != null ? Math.round((score / 25.0) * 100.0) / 100.0 : 0.0;
                 String profileType;
                 String abilityLevel;
                 String abilityType = "";
+
+                // 根据百分制分数判断画像类型
                 if (score != null && score >= 90) {
                     profileType = "学术研究型";
-                    abilityLevel = "A";
+                    abilityLevel = "A+";
                     abilityType = "success";
-                } else if (score != null && score >= 80) {
+                } else if (score != null && score >= 85) {
                     profileType = "实践应用型";
-                    abilityLevel = "B+";
-                    abilityType = "";
-                } else {
+                    abilityLevel = "A";
+                    abilityType = "primary";
+                } else if (score != null && score >= 80) {
                     profileType = "复合探索型";
-                    abilityLevel = "B";
+                    abilityLevel = "B+";
                     abilityType = "warning";
+                } else if (score != null && score >= 75) {
+                    profileType = "创新创业型";
+                    abilityLevel = "B";
+                    abilityType = "info";
+                } else {
+                    profileType = "潜力发展型";
+                    abilityLevel = "C";
+                    abilityType = "danger";
                 }
 
                 profile.put("profileType", profileType);
-                profile.put("gpa", student.getGpa());
+                profile.put("gpa", gpa);
                 profile.put("abilityLevel", abilityLevel);
                 profile.put("abilityType", abilityType);
                 profile.put("avatarColor", colors[i % colors.length]);

@@ -5,7 +5,13 @@
 
     <!-- 分页查询学生列表 -->
     <select id="selectStudentPage" resultType="com.edu.studentprofile.entity.Student">
-        SELECT * FROM sys_student
+        SELECT id, student_no AS studentNo, name, gender, birthday, phone, email,
+               nationality, political_status AS politicalStatus, enrollment_year AS enrollmentYear,
+               enrollment_month AS enrollmentMonth, college, major, class_name AS className,
+               education_level AS educationLevel, student_status AS studentStatus, hometown,
+               address, avatar_url AS avatarUrl, tags, profile_score AS profileScore,
+               create_time AS createTime, update_time AS updateTime
+        FROM sys_student
         WHERE deleted = 0
         <if test="name != null and name != ''">
             AND name LIKE CONCAT('%', #{name}, '%')

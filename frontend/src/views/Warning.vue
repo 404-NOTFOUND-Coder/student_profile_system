@@ -4,24 +4,36 @@
       <template #header>
         <div class="card-header">
           <span>学业预警管理</span>
-          <el-space>
-            <el-select v-model="queryForm.warningType" placeholder="预警类型" clearable>
-              <el-option label="成绩预警" value="1" />
-              <el-option label="学分预警" value="2" />
-              <el-option label="学业困难" value="3" />
-            </el-select>
-            <el-select v-model="queryForm.level" placeholder="预警等级" clearable>
-              <el-option label="一般" :value="1" />
-              <el-option label="较重" :value="2" />
-              <el-option label="严重" :value="3" />
-            </el-select>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-          </el-space>
         </div>
       </template>
+
+      <!-- 搜索表单 -->
+      <el-form :inline="true" :model="queryForm" class="search-form">
+        <el-form-item label="预警类型">
+          <el-select v-model="queryForm.warningType" placeholder="请选择预警类型" clearable class="select-wide">
+            <el-option label="成绩预警" value="1" />
+            <el-option label="学分预警" value="2" />
+            <el-option label="学业困难" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="预警等级">
+          <el-select v-model="queryForm.level" placeholder="请选择预警等级" clearable class="select-wide">
+            <el-option label="一般" :value="1" />
+            <el-option label="较重" :value="2" />
+            <el-option label="严重" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
 
       <el-table :data="tableData" stripe border v-loading="loading">
         <el-table-column type="index" label="序号" width="60" />
@@ -31,8 +43,8 @@
         <el-table-column prop="major" label="专业" width="150" />
         <el-table-column prop="warningType" label="预警类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="getWarningType(row.warningType)">
-              {{ row.warningTypeName }}
+            <el-tag :type="getWarningTypeTag(row.warningType)">
+              {{ row.warningType || '成绩预警' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -44,7 +56,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="warningMessage" label="预警信息" min-width="200" />
-        <el-table-column prop="createTime" label="创建时间" width="160" />
+        <el-table-column prop="createTime" label="创建时间" width="120">
+          <template #default="{ row }">
+            {{ formatDate(row.createTime) }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="viewDetail(row)">
@@ -79,8 +95,8 @@
         <el-descriptions-item label="学号">{{ currentWarning.studentNo }}</el-descriptions-item>
         <el-descriptions-item label="姓名">{{ currentWarning.studentName }}</el-descriptions-item>
         <el-descriptions-item label="预警类型">
-          <el-tag :type="getWarningType(currentWarning.warningType)">
-            {{ currentWarning.warningTypeName }}
+          <el-tag :type="getWarningTypeTag(currentWarning.warningType)">
+            {{ currentWarning.warningType || '成绩预警' }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="预警等级">
@@ -92,18 +108,16 @@
           {{ currentWarning.warningMessage }}
         </el-descriptions-item>
         <el-descriptions-item label="触发条件" :span="2">
-          {{ currentWarning.triggerCondition }}
+          {{ currentWarning.warningMessage || '学业评分偏低' }}
         </el-descriptions-item>
         <el-descriptions-item label="建议措施" :span="2">
-          {{ currentWarning.suggestAction }}
+          {{ getSuggestAction(currentWarning.level) }}
         </el-descriptions-item>
         <el-descriptions-item label="处理状态">
-          <el-tag v-if="currentWarning.status === 0" type="warning">待处理</el-tag>
-          <el-tag v-else-if="currentWarning.status === 1" type="primary">处理中</el-tag>
-          <el-tag v-else type="success">已解决</el-tag>
+          <el-tag type="warning">待处理</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
-          {{ currentWarning.createTime }}
+          {{ formatDate(currentWarning.createTime) }}
         </el-descriptions-item>
       </el-descriptions>
       
@@ -172,11 +186,10 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await statsApi.getWarningList({
-      ...queryForm,
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     })
-    if (res.code === 200) {
+    if (res.code === 200 && res.data) {
       tableData.value = res.data.records || res.data || []
       pagination.total = res.data.total || tableData.value.length
     }
@@ -188,6 +201,13 @@ const loadData = async () => {
 }
 
 const handleSearch = () => {
+  pagination.pageNum = 1
+  loadData()
+}
+
+const handleReset = () => {
+  queryForm.warningType = ''
+  queryForm.level = ''
   pagination.pageNum = 1
   loadData()
 }
@@ -217,9 +237,32 @@ const getWarningType = (type) => {
   return types[type] || 'info'
 }
 
+const getWarningTypeTag = (type) => {
+  // type 是字符串如 "成绩预警"
+  if (type === '成绩预警') return 'danger'
+  if (type === '学分预警') return 'warning'
+  if (type === '学业困难') return 'info'
+  return 'info'
+}
+
 const getLevelType = (level) => {
   const types = { 1: 'info', 2: 'warning', 3: 'danger' }
   return types[level] || 'info'
+}
+
+const getSuggestAction = (level) => {
+  const actions = {
+    1: '保持当前学习状态，注意查漏补缺',
+    2: '建议加强学业辅导，增加自习时间',
+    3: '需要重点关注，建议约谈家长和导师'
+  }
+  return actions[level] || '建议加强学业辅导'
+}
+
+const formatDate = (date) => {
+  if (!date) return ''
+  const d = new Date(date)
+  return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
 onMounted(() => {
@@ -236,6 +279,17 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.search-form {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+
+  .select-wide {
+    width: 160px;
+  }
 }
 
 .pagination {

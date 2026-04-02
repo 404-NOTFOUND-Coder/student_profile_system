@@ -119,8 +119,8 @@ const updateCollegeChart = () => {
   }
 
   const data = collegeChartData.value.map(item => ({
-    name: item.name,
-    value: item.value
+    name: item.name || item.college,
+    value: item.value || item.count || 0
   }))
 
   collegeChart.setOption({
@@ -150,6 +150,7 @@ const loadData = async () => {
   try {
     // 调用后端API获取统计数据
     const statsRes = await request.get('/dashboard/stats')
+    console.log('statsRes:', statsRes)
     if (statsRes.code === 200 && statsRes.data) {
       stats.totalStudents = statsRes.data.totalStudents || 0
       stats.activeStudents = statsRes.data.activeStudents || 0
@@ -159,33 +160,36 @@ const loadData = async () => {
 
     // 调用后端API获取预警列表
     const warningsRes = await request.get('/dashboard/warnings')
+    console.log('warningsRes:', warningsRes)
     if (warningsRes.code === 200 && warningsRes.data) {
       warnings.value = warningsRes.data.map(w => ({
-        studentNo: w.studentNo,
-        studentName: w.studentName,
-        warningType: w.warningType,
-        level: w.level,
-        levelName: w.levelName,
+        studentNo: w.studentNo || '',
+        studentName: w.studentName || w.name || '',
+        warningType: w.warningType || '成绩预警',
+        level: w.level || 1,
+        levelName: w.levelName || '一般',
         createTime: w.createTime ? new Date(w.createTime).toLocaleDateString() : ''
       }))
     }
 
     // 调用后端API获取画像示例
     const profilesRes = await request.get('/dashboard/profile-examples')
+    console.log('profilesRes:', profilesRes)
     if (profilesRes.code === 200 && profilesRes.data) {
       sampleProfiles.value = profilesRes.data.map(p => ({
-        studentNo: p.studentNo,
-        name: p.name,
-        profileType: p.profileType,
-        gpa: p.gpa,
-        abilityLevel: p.abilityLevel,
-        abilityType: p.abilityType,
-        avatarColor: p.avatarColor
+        studentNo: p.studentNo || '',
+        name: p.name || '未知',
+        profileType: p.profileType || '待分析',
+        gpa: p.gpa || 0,
+        abilityLevel: p.abilityLevel || 'C',
+        abilityType: p.abilityType || 'info',
+        avatarColor: p.avatarColor || '#409eff'
       }))
     }
 
     // 调用后端API获取学院统计数据
     const collegeRes = await request.get('/dashboard/college-stats')
+    console.log('collegeRes:', collegeRes)
     if (collegeRes.code === 200 && collegeRes.data) {
       collegeChartData.value = collegeRes.data
       updateCollegeChart()
@@ -196,8 +200,10 @@ const loadData = async () => {
     // 如果API调用失败，使用模拟数据作为后备
     stats.totalStudents = 40
     stats.activeStudents = 38
-    stats.warningCount = 2
+    stats.warningCount = 5
     stats.avgGpa = 3.45
+    warnings.value = []
+    sampleProfiles.value = []
   }
 }
 
