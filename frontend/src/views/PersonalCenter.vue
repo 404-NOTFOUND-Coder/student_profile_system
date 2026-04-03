@@ -1,53 +1,57 @@
 <template>
   <div class="personal-center">
-    <el-row :gutter="20">
-      <!-- 左侧用户信息卡片 -->
-      <el-col :span="8">
-        <el-card class="user-card">
-          <div class="user-header">
-            <el-avatar :size="100" :style="{ background: avatarBgColor }">
-              {{ userInfo.name?.charAt(0) || '管' }}
-            </el-avatar>
-            <div class="user-badge">
-              <el-tag type="success" size="small">已认证</el-tag>
-            </div>
+    <!-- 用户信息卡片 -->
+    <el-card class="user-card mb-20">
+      <div class="user-profile">
+        <div class="user-avatar-section">
+          <el-avatar :size="100" :style="{ background: avatarBgColor }">
+            {{ userInfo.name?.charAt(0) || '管' }}
+          </el-avatar>
+          <div class="user-badge">
+            <el-tag type="success" size="small">已认证</el-tag>
           </div>
-          <div class="user-name">{{ userInfo.name }}</div>
-          <div class="user-role">{{ userInfo.role }}</div>
-
-          <el-divider />
-
-          <div class="user-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ userInfo.studentCount }}</div>
-              <div class="stat-label">管理学生</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ userInfo.loginCount }}</div>
-              <div class="stat-label">登录次数</div>
-            </div>
-            <div class="stat-item" v-if="isStudent">
-              <div class="stat-value">{{ userInfo.avgGpa }}</div>
-              <div class="stat-label">平均绩点</div>
-            </div>
+        </div>
+        <div class="user-basic-info">
+          <div class="user-name-row">
+            <span class="user-name">{{ userInfo.name }}</span>
+            <el-tag type="warning" size="small">{{ userInfo.role }}</el-tag>
           </div>
-        </el-card>
-      </el-col>
+          <div class="user-meta">
+            <span><el-icon><User /></el-icon> 工号：{{ userInfo.employeeNo }}</span>
+            <span><el-icon><OfficeBuilding /></el-icon> {{ userInfo.department }}</span>
+            <span><el-icon><Calendar /></el-icon> 入职时间：2020-09-01</span>
+          </div>
+        </div>
+        <div class="user-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ userInfo.studentCount }}</div>
+            <div class="stat-label">管理学生</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ userInfo.loginCount }}</div>
+            <div class="stat-label">登录次数</div>
+          </div>
+          <div class="stat-item" v-if="isStudent">
+            <div class="stat-value">{{ userInfo.avgGpa }}</div>
+            <div class="stat-label">平均绩点</div>
+          </div>
+        </div>
+      </div>
+    </el-card>
 
-      <!-- 右侧信息表单 -->
-      <el-col :span="16">
-        <el-card>
-          <template #header>
-            <span>基本信息</span>
-          </template>
+    <!-- 基本信息 -->
+    <el-card class="mb-20">
+      <template #header>
+        <span>基本信息</span>
+      </template>
 
-          <el-form :model="userInfo" label-width="100px" class="info-form">
-            <el-form-item label="用户名">
-              <el-input v-model="userInfo.name" placeholder="请输入用户名" />
-            </el-form-item>
+      <el-form :model="userInfo" label-width="100px" class="info-form">
+        <el-form-item label="用户名">
+          <el-input v-model="userInfo.name" placeholder="请输入用户名" />
+        </el-form-item>
 
-            <el-form-item label="工号">
-              <el-input v-model="userInfo.employeeNo" disabled />
+        <el-form-item label="工号">
+          <el-input v-model="userInfo.employeeNo" disabled />
             </el-form-item>
 
             <el-form-item label="所属部门">
@@ -129,8 +133,6 @@
             <el-tag type="success" size="small">已绑定</el-tag>
           </div>
         </el-card>
-      </el-col>
-    </el-row>
 
     <!-- 修改密码对话框 -->
     <el-dialog v-model="showPasswordDialog" title="修改密码" width="500px">
@@ -257,54 +259,78 @@ onMounted(() => {
   padding: 20px;
 }
 
-.mt-20 {
-  margin-top: 20px;
+.mb-20 {
+  margin-bottom: 20px;
 }
 
 .user-card {
-  text-align: center;
-
-  .user-header {
-    position: relative;
-    display: inline-block;
-
-    .user-badge {
-      position: absolute;
-      bottom: 0;
-      right: -10px;
-    }
-  }
-
-  .user-name {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 16px;
-    color: #303133;
-  }
-
-  .user-role {
-    color: #909399;
-    margin-top: 8px;
-  }
-
-  .user-stats {
+  .user-profile {
     display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
 
-    .stat-item {
-      text-align: center;
+    .user-avatar-section {
+      position: relative;
+      flex-shrink: 0;
 
-      .stat-value {
-        font-size: 20px;
-        font-weight: bold;
-        color: #409eff;
+      .user-badge {
+        position: absolute;
+        bottom: 0;
+        right: -10px;
+      }
+    }
+
+    .user-basic-info {
+      flex: 1;
+
+      .user-name-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        .user-name {
+          font-size: 24px;
+          font-weight: bold;
+          color: #303133;
+        }
       }
 
-      .stat-label {
-        font-size: 12px;
-        color: #909399;
-        margin-top: 4px;
+      .user-meta {
+        display: flex;
+        gap: 24px;
+        color: #606266;
+        font-size: 14px;
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+    }
+
+    .user-stats {
+      display: flex;
+      gap: 40px;
+      flex-shrink: 0;
+
+      .stat-item {
+        text-align: center;
+        min-width: 80px;
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: #409eff;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: #909399;
+          margin-top: 4px;
+        }
       }
     }
   }
@@ -324,7 +350,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 16px 0;
 
   .security-info {
     .security-title {
