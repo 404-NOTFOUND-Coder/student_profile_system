@@ -404,3 +404,156 @@ UNION ALL
 SELECT '预警记录数', COUNT(*) FROM academic_warning
 UNION ALL
 SELECT '用户数', COUNT(*) FROM sys_user;
+
+-- =============================================
+-- 6. 活动表 (用于活动管理)
+-- =============================================
+DROP TABLE IF EXISTS activity;
+CREATE TABLE activity (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name                VARCHAR(200) NOT NULL COMMENT '活动名称',
+    activity_type       TINYINT COMMENT '活动类型: 1-竞赛, 2-科研, 3-社会实践, 4-学生工作, 5-志愿服务, 6-文体活动, 7-培训, 8-资格认证',
+    category            VARCHAR(50) COMMENT '一级分类: 比赛获奖, 培训经历, 工作经历, 学生活动, 个人荣誉, 资格认证',
+    sub_category        VARCHAR(50) COMMENT '二级分类: 创新创业, 科技创新, 劳动实践等',
+    level               TINYINT COMMENT '活动级别: 1-院级, 2-校级, 3-省部级, 4-国家级, 5-国际级',
+    organizer           VARCHAR(200) COMMENT '主办单位',
+    co_organizer        VARCHAR(200) COMMENT '承办单位',
+    description         TEXT COMMENT '活动描述',
+    target_audience     VARCHAR(200) COMMENT '面向对象',
+    register_start_time DATE COMMENT '报名开始时间',
+    register_end_time   DATE COMMENT '报名截止时间',
+    activity_start_time  DATE COMMENT '活动开始时间',
+    activity_end_time   DATE COMMENT '活动结束时间',
+    location            VARCHAR(200) COMMENT '活动地点',
+    max_participants    INT DEFAULT 0 COMMENT '报名人数上限',
+    current_participants INT DEFAULT 0 COMMENT '当前报名人数',
+    reward              TEXT COMMENT '奖励/收获',
+    requirements        TEXT COMMENT '参赛要求',
+    contact             VARCHAR(100) COMMENT '联系方式',
+    poster_url          VARCHAR(500) COMMENT '活动海报URL',
+    detail_url          VARCHAR(500) COMMENT '活动详情URL',
+    enable_recommend    TINYINT DEFAULT 0 COMMENT '是否开启推荐: 0-否, 1-是',
+    recommend_weight   DECIMAL(5,2) DEFAULT 50 COMMENT '推荐权重',
+    recommend_to_newbie TINYINT DEFAULT 0 COMMENT '是否推荐给新人',
+    recommend_to_competition_type TINYINT DEFAULT 0 COMMENT '是否推荐给竞赛型学生',
+    recommend_to_research_type   TINYINT DEFAULT 0 COMMENT '是否推荐给科研型学生',
+    recommend_to_startup_type    TINYINT DEFAULT 0 COMMENT '是否推荐给创业型学生',
+    status              VARCHAR(20) DEFAULT 'draft' COMMENT '状态: draft-草稿, published-已发布, ongoing-进行中, ended-已结束, cancelled-已取消',
+    deleted             TINYINT DEFAULT 0,
+    create_time         DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_category (category),
+    INDEX idx_level (level),
+    INDEX idx_status (status),
+    INDEX idx_enable_recommend (enable_recommend)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 插入活动测试数据
+INSERT INTO activity (name, activity_type, category, sub_category, level, organizer, register_start_time, register_end_time, activity_start_time, activity_end_time, location, reward, enable_recommend, recommend_weight, recommend_to_newbie, recommend_to_competition_type, recommend_to_research_type, recommend_to_startup_type, status) VALUES
+('全国大学生程序设计竞赛', 1, '比赛获奖', '科技创新', 4, '教育部高等学校计算机类专业教学指导委员会', '2024-03-01', '2024-03-15', '2024-04-01', '2024-04-03', '电子科技大学', '获得ACM金银铜牌证书，增加保研积分', 1, 90, 1, 1, 1, 1, 'published'),
+('挑战杯全国大学生课外学术科技作品竞赛', 1, '比赛获奖', '学术研究', 4, '共青团中央', '2024-02-01', '2024-02-28', '2024-05-01', '2024-05-15', '待定', '国赛获奖可获得保研资格和创新创业学分', 1, 95, 1, 1, 1, 1, 'published'),
+('大学生创新创业训练计划项目', 2, '培训经历', '创新创业', 3, '教育部高等教育司', '2024-01-01', '2024-03-30', '2024-04-01', '2024-12-31', '校内', '国家级立项可获得创新学分和科研经费支持', 1, 85, 1, 0, 0, 1, 'published'),
+('暑期社会实践活动', 3, '学生活动', '劳动实践', 2, '校团委', '2024-05-01', '2024-06-20', '2024-07-01', '2024-08-31', '各地实践基地', '获得社会实践学分和志愿者时长', 1, 70, 1, 0, 0, 0, 'published'),
+('全国大学生英语竞赛', 1, '比赛获奖', '学术研究', 4, '高等学校大学外语教学研究会', '2024-02-15', '2024-03-20', '2024-04-21', '2024-04-21', '各省级考点', '获奖可获得学分和奖学金评定资格', 1, 80, 1, 1, 1, 0, 'published'),
+('机器人大赛', 1, '比赛获奖', '科技创新', 4, '中国自动化学会', '2024-03-15', '2024-04-30', '2024-07-15', '2024-07-20', '北京', '获奖可获得创新学分和技术认证', 1, 88, 1, 1, 1, 0, 'published'),
+('职业生涯规划培训', 7, '培训经历', '技能培训', 2, '就业指导中心', '2024-03-01', '2024-03-10', '2024-03-15', '2024-03-16', '图书馆报告厅', '帮助学生明确职业发展方向', 1, 60, 1, 0, 0, 0, 'published'),
+('专业技能证书考试', 8, '资格认证', '专业证书', 3, '工业和信息化部', '2024-04-01', '2024-04-15', '2024-05-01', '2024-05-01', '计算机学院', '获得行业认可的技能证书', 1, 75, 0, 1, 1, 0, 'published');
+
+-- =============================================
+-- 7. 活动推荐表
+-- =============================================
+DROP TABLE IF EXISTS activity_recommendation;
+CREATE TABLE activity_recommendation (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    student_id          BIGINT NOT NULL COMMENT '学生ID',
+    student_no          VARCHAR(50) COMMENT '学生学号',
+    activity_id         BIGINT NOT NULL COMMENT '活动ID',
+    activity_name       VARCHAR(200) COMMENT '活动名称',
+    activity_type       TINYINT COMMENT '活动类型',
+    category            VARCHAR(50) COMMENT '分类',
+    sub_category        VARCHAR(50) COMMENT '二级分类',
+    recommend_score     DECIMAL(5,2) COMMENT '推荐分数: 0-100',
+    recommend_reason    TEXT COMMENT '推荐理由',
+    match_dimension     VARCHAR(50) COMMENT '匹配维度: profile_match-画像匹配, history_match-历史相似, similar_student-同类学生',
+    level               VARCHAR(20) COMMENT '活动级别',
+    organizer           VARCHAR(200) COMMENT '主办单位',
+    register_start_time DATE COMMENT '报名开始时间',
+    register_end_time   DATE COMMENT '报名截止时间',
+    activity_start_time DATE COMMENT '活动开始时间',
+    activity_end_time   DATE COMMENT '活动结束时间',
+    location            VARCHAR(200) COMMENT '活动地点',
+    reward              TEXT COMMENT '奖励/收获',
+    is_registered      TINYINT DEFAULT 0 COMMENT '是否已报名: 0-否, 1-是',
+    is_completed        TINYINT DEFAULT 0 COMMENT '是否已完成: 0-否, 1-是',
+    status              VARCHAR(20) DEFAULT 'pending' COMMENT '推荐状态: pending-待处理, viewed-已查看, interested-感兴趣, applied-已报名, not_interested-不感兴趣',
+    deleted             TINYINT DEFAULT 0,
+    create_time         DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_student_id (student_id),
+    INDEX idx_activity_id (activity_id),
+    INDEX idx_status (status),
+    INDEX idx_recommend_score (recommend_score)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =============================================
+-- 8. 知识图谱表
+-- =============================================
+DROP TABLE IF EXISTS knowledge_graph;
+CREATE TABLE knowledge_graph (
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+    head_type           VARCHAR(50) NOT NULL COMMENT '头实体类型: student, college, major, course, activity',
+    head_id             VARCHAR(50) NOT NULL COMMENT '头实体ID',
+    head_name           VARCHAR(100) COMMENT '头实体名称',
+    relation_type       VARCHAR(50) NOT NULL COMMENT '关系类型: static_relation, dynamic_relation',
+    relation            VARCHAR(100) NOT NULL COMMENT '一级关系: 隶属院系, 参加活动, 获得奖项等',
+    sub_relation        VARCHAR(100) COMMENT '二级关系: 科技创新, 学术研究等',
+    tail_type           VARCHAR(50) COMMENT '尾实体类型',
+    tail_id             VARCHAR(50) COMMENT '尾实体ID',
+    tail_name           VARCHAR(200) COMMENT '尾实体名称/成果名称',
+    event_time          DATETIME COMMENT '发生时间',
+    time_dimension      VARCHAR(20) COMMENT '时间维度值(如: 2022-05)',
+    activity_level      VARCHAR(20) COMMENT '活动级别: 院级, 校级, 省部级, 国家级, 国际级',
+    award_level         VARCHAR(20) COMMENT '奖项等级: 特等奖, 一等奖, 二等奖, 三等奖, 优秀奖, 参与奖',
+    confidence          DECIMAL(5,2) DEFAULT 1.0 COMMENT '置信度: 0-1',
+    source              VARCHAR(50) DEFAULT 'manual' COMMENT '来源: manual, system, knowledge_base',
+    evidence            TEXT COMMENT '证据/备注',
+    deleted             TINYINT DEFAULT 0,
+    create_time         DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_head_id (head_id),
+    INDEX idx_relation_type (relation_type),
+    INDEX idx_relation (relation),
+    INDEX idx_time_dimension (time_dimension)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 插入知识图谱测试数据（基于学生1的静态关系和活动）
+INSERT INTO knowledge_graph (head_type, head_id, head_name, relation_type, relation, tail_type, tail_name, event_time, time_dimension) VALUES
+('student', '2021001001', '张三', 'static_relation', '隶属院系', 'college', '计算机学院', NULL, NULL),
+('student', '2021001001', '张三', 'static_relation', '隶属专业', 'major', '计算机科学与技术', NULL, NULL),
+('student', '2021001001', '张三', 'static_relation', '性别', 'gender', '男', NULL, NULL),
+('student', '2021001001', '张三', 'static_relation', '年级', 'grade', '2021级', NULL, NULL),
+('student', '2021001001', '张三', 'static_relation', '班级', 'class', '计算机1班', NULL, NULL),
+('student', '2021001001', '张三', 'static_relation', '来自于', 'hometown', '四川省成都市', NULL, NULL),
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '科技创新', 'activity', '全国大学生程序设计竞赛', '2022-10-15', '2022-10'),
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '学术研究', 'activity', 'ACM-ICPC区域赛银奖', '2022-10-15', '2022-10'),
+('student', '2021001001', '张三', 'dynamic_relation', '培训经历', '技能培训', 'activity', '软件工程培训', '2023-01-01', '2023-01'),
+('student', '2021001001', '张三', 'dynamic_relation', '学生活动', '社团活动', 'activity', '学生会主席', '2023-09-01', '2023-09'),
+('student', '2021001001', '张三', 'dynamic_relation', '个人荣誉', '三好学生', 'activity', '校级三好学生', '2023-12-01', '2023-12'),
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '创新创业', 'activity', '挑战杯银奖', '2024-05-01', '2024-05');
+
+-- 更新统计查询
+SELECT '学生总数' as 项目, COUNT(*) as 数量 FROM sys_student
+UNION ALL
+SELECT '成绩记录数', COUNT(*) FROM academic_score
+UNION ALL
+SELECT '活动记录数', COUNT(*) FROM student_activity
+UNION ALL
+SELECT '预警记录数', COUNT(*) FROM academic_warning
+UNION ALL
+SELECT '活动管理记录数', COUNT(*) FROM activity
+UNION ALL
+SELECT '活动推荐记录数', COUNT(*) FROM activity_recommendation
+UNION ALL
+SELECT '知识图谱记录数', COUNT(*) FROM knowledge_graph
+UNION ALL
+SELECT '用户数', COUNT(*) FROM sys_user;
