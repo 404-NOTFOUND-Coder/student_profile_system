@@ -2,10 +2,7 @@ package com.edu.studentprofile.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.edu.studentprofile.entity.Student;
-import com.edu.studentprofile.entity.AcademicWarning;
-import com.edu.studentprofile.entity.neo4j.StudentNode;
 import com.edu.studentprofile.mapper.StudentMapper;
-import com.edu.studentprofile.service.Neo4jGraphService;
 import com.edu.studentprofile.util.R;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +23,6 @@ public class DashboardController {
 
     @Autowired
     private StudentMapper studentMapper;
-
-    private final Neo4jGraphService neo4jGraphService;
 
     /**
      * 获取Dashboard统计数据
