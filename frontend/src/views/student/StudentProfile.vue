@@ -270,13 +270,84 @@
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import { profileApi } from '@/api/student'
 
 const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
 const academicTab = ref('score')
+
+// 模拟学生画像数据
+const mockProfileData = {
+  '2021001001': {
+    name: '张三',
+    studentNo: '2021001001',
+    gender: '男',
+    college: '计算机学院',
+    major: '软件工程',
+    enrollmentYear: 2021,
+    profileScore: 88,
+    knowledgeEntropy: 8.5,
+    graphEditDistance: 2.3,
+    gpa: 3.85,
+    activityScore: 92,
+    profileType: '学术研究型',
+    abilityLevel: 'A',
+    personality: '勤奋好学,逻辑思维强,创新意识高',
+    academicTags: ['编程达人', '算法高手', '科研新星'],
+    practiceTags: ['竞赛选手', '项目骨干', '技术分享者'],
+    suggestionTags: ['加强实践经验', '提升团队协作', '关注前沿技术'],
+    academicTrend: { trend: 'RISING', description: '学业表现稳步提升' },
+    coursePerformance: [
+      { courseName: '数据结构与算法', semester: '2021-1', score: 95, knowledgeArea: '计算机基础', isChallenge: true },
+      { courseName: '计算机网络', semester: '2021-2', score: 88, knowledgeArea: '系统基础', isChallenge: false },
+      { courseName: '操作系统', semester: '2022-1', score: 92, knowledgeArea: '系统基础', isChallenge: true },
+      { courseName: '数据库原理', semester: '2022-2', score: 90, knowledgeArea: '数据管理', isChallenge: false },
+      { courseName: '人工智能导论', semester: '2023-1', score: 94, knowledgeArea: '人工智能', isChallenge: true }
+    ],
+    evidenceChain: [
+      { evidenceId: 1, evidenceType: '竞赛获奖', relevance: 0.95, content: 'ACM-ICPC亚洲区域赛银奖', source: '竞赛管理系统' },
+      { evidenceId: 2, evidenceType: '科研项目', relevance: 0.88, content: '参与导师AI科研项目', source: '科研管理系统' },
+      { evidenceId: 3, evidenceType: '论文发表', relevance: 0.82, content: '在投SCI论文第一作者', source: '学术管理系统' }
+    ],
+    timeline: [
+      { date: '2021-09', eventType: '学业', eventName: '入学教育', description: '参加新生入学教育活动' },
+      { date: '2022-06', eventType: '竞赛', eventName: '程序设计竞赛', description: '获得校级一等奖' },
+      { date: '2023-03', eventType: '科研', eventName: '加入实验室', description: '进入AI研究实验室' },
+      { date: '2023-10', eventType: '竞赛', eventName: 'ACM竞赛', description: '获得亚洲区域赛银奖' }
+    ],
+    warnings: []
+  },
+  '2021001002': {
+    name: '李四',
+    studentNo: '2021001002',
+    gender: '女',
+    college: '计算机学院',
+    major: '计算机科学与技术',
+    enrollmentYear: 2021,
+    profileScore: 75,
+    knowledgeEntropy: 7.2,
+    graphEditDistance: 3.5,
+    gpa: 3.12,
+    activityScore: 68,
+    profileType: '实践应用型',
+    abilityLevel: 'B+',
+    personality: '动手能力强,善于实践,团队协作好',
+    academicTags: ['实践达人', '项目经验丰富'],
+    practiceTags: ['学生干部', '志愿者标兵', '社团活跃分子'],
+    suggestionTags: ['加强理论学习', '提升学术研究能力'],
+    academicTrend: { trend: 'STABLE', description: '学业表现稳定' },
+    coursePerformance: [
+      { courseName: '离散数学', semester: '2021-1', score: 82, knowledgeArea: '计算机基础', isChallenge: false },
+      { courseName: '面向对象编程', semester: '2021-2', score: 85, knowledgeArea: '计算机基础', isChallenge: false },
+      { courseName: '计算机组成原理', semester: '2022-1', score: 78, knowledgeArea: '系统基础', isChallenge: true }
+    ],
+    evidenceChain: [],
+    timeline: [],
+    warnings: [{ id: 1, warningMessage: '平均绩点偏低', level: 1, suggestAction: '保持当前学习状态' }]
+  }
+}
+
 const profile = ref({})
 const evidenceChain = ref([])
 const timeline = ref([])
@@ -316,50 +387,27 @@ const scoreColor = computed(() => {
   return '#f56c6c'
 })
 
-// 获取画像数据
-const fetchProfile = async () => {
-  const studentNo = route.params.studentNo
+// 获取画像数据（模拟）
+const fetchProfile = () => {
+  const studentNo = route.params.studentNo || '2021001001'
   loading.value = true
-  
-  try {
-    // 调用后端API获取学生画像
-    const res = await profileApi.getProfile(studentNo)
-    if (res.code === 200 && res.data) {
-      profile.value = res.data
-      
-      // 如果有成绩数据
-      if (res.data.coursePerformance) {
-        coursePerformance.value = res.data.coursePerformance
-      }
-      
-      // 如果有证据链数据
-      if (res.data.evidenceChain) {
-        evidenceChain.value = res.data.evidenceChain
-      }
-      
-      // 如果有时间线数据
-      if (res.data.timeline) {
-        timeline.value = res.data.timeline
-      }
-      
-      // 如果有相似学生数据
-      if (res.data.similarStudents) {
-        similarStudents.value = res.data.similarStudents
-      }
-      
-      // 如果有预警数据
-      if (res.data.warnings) {
-        warnings.value = res.data.warnings
-      }
-    }
 
-    await nextTick()
+  // 使用模拟数据
+  const mockData = mockProfileData[studentNo] || mockProfileData['2021001001']
+  profile.value = { ...mockData }
+  coursePerformance.value = mockData.coursePerformance || []
+  evidenceChain.value = mockData.evidenceChain || []
+  timeline.value = mockData.timeline || []
+  warnings.value = mockData.warnings || []
+  similarStudents.value = [
+    { studentNo: '2021001003', name: '王五', profileType: '学术研究型', gpa: 3.78, similarity: 0.85 },
+    { studentNo: '2021001004', name: '赵六', profileType: '复合探索型', gpa: 3.65, similarity: 0.72 }
+  ]
+
+  nextTick(() => {
     initCharts()
-  } catch (error) {
-    console.error('获取画像失败:', error)
-  } finally {
     loading.value = false
-  }
+  })
 }
 
 const initCharts = () => {

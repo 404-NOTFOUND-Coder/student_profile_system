@@ -130,13 +130,120 @@
 import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
-import request from '@/api/index'
 
 const activeTab = ref('graph')
 const selectedStudent = ref('')
-const students = ref([])
-const quadsData = ref([])
-const activityStats = reactive({ total: 0, byRelation: {}, byLevel: {}, byYear: {} })
+
+// 模拟学生数据
+const students = ref([
+  { no: '2021001001', name: '张三' },
+  { no: '2021001002', name: '李四' },
+  { no: '2021001003', name: '王五' },
+  { no: '2021001004', name: '赵六' }
+])
+
+// 模拟四元组数据（所有学生的汇总数据）
+const quadsData = ref([
+  { head: '张三', relation: '隶属院系', tail: '计算机学院', time: '-', type: 'static' },
+  { head: '张三', relation: '所属专业', tail: '软件工程', time: '-', type: 'static' },
+  { head: '张三', relation: '所属班级', tail: '软工1班', time: '-', type: 'static' },
+  { head: '张三', relation: '比赛获奖', tail: '全国大学生程序设计竞赛', time: '2022-10', type: 'dynamic' },
+  { head: '张三', relation: '比赛获奖', tail: 'ACM-ICPC国际大学生程序设计竞赛', time: '2023-05', type: 'dynamic' },
+  { head: '张三', relation: '学术科研', tail: '人工智能创新实验', time: '2023-03', type: 'dynamic' },
+  { head: '张三', relation: '志愿服务', tail: '暑期三下乡社会实践', time: '2022-07', type: 'dynamic' },
+  { head: '李四', relation: '隶属院系', tail: '计算机学院', time: '-', type: 'static' },
+  { head: '李四', relation: '所属专业', tail: '计算机科学与技术', time: '-', type: 'static' },
+  { head: '李四', relation: '所属班级', tail: '计科2班', time: '-', type: 'static' },
+  { head: '李四', relation: '比赛获奖', tail: '全国大学生数学建模竞赛', time: '2023-09', type: 'dynamic' },
+  { head: '李四', relation: '学术科研', tail: '区块链技术研究', time: '2023-06', type: 'dynamic' },
+  { head: '王五', relation: '隶属院系', tail: '软件学院', time: '-', type: 'static' },
+  { head: '王五', relation: '所属专业', tail: '数字媒体技术', time: '-', type: 'static' },
+  { head: '王五', relation: '所属班级', tail: '数媒1班', time: '-', type: 'static' },
+  { head: '王五', relation: '比赛获奖', tail: '全国大学生广告艺术大赛', time: '2023-08', type: 'dynamic' },
+  { head: '王五', relation: '社会实践', tail: '互联网公司实习', time: '2023-07', type: 'dynamic' },
+  { head: '赵六', relation: '隶属院系', tail: '信息学院', time: '-', type: 'static' },
+  { head: '赵六', relation: '所属专业', tail: '通信工程', time: '-', type: 'static' },
+  { head: '赵六', relation: '所属班级', tail: '通信1班', time: '-', type: 'static' },
+  { head: '赵六', relation: '比赛获奖', tail: '全国大学生电子设计竞赛', time: '2023-04', type: 'dynamic' },
+  { head: '赵六', relation: '学术科研', tail: '5G通信技术研究', time: '2023-01', type: 'dynamic' },
+  { head: '赵六', relation: '志愿服务', tail: '北京冬奥会志愿者', time: '2022-02', type: 'dynamic' }
+])
+
+// 模拟活动统计数据
+const activityStats = reactive({
+  total: 8,
+  byRelation: { '比赛获奖': 4, '学术科研': 2, '志愿服务': 1, '社会实践': 1 },
+  byLevel: { '院级': 2, '校级': 3, '省部级': 2, '国家级': 1, '国际级': 0 },
+  byYear: { '2021': 1, '2022': 2, '2023': 4, '2024': 1 }
+})
+
+// 模拟关系配置
+const relationsConfig = ref({
+  staticRelations: [
+    { name: '隶属院系', subCategories: [] },
+    { name: '所属专业', subCategories: [] },
+    { name: '所属班级', subCategories: [] }
+  ],
+  dynamicRelations: [
+    { name: '比赛获奖', subCategories: ['学科竞赛', '科技创新', '文体艺术'] },
+    { name: '学术科研', subCategories: ['科研项目', '论文发表', '专利发明'] },
+    { name: '志愿服务', subCategories: ['社区服务', '支教活动', '赛事服务'] },
+    { name: '社会实践', subCategories: ['企业实习', '暑期实践', '调研考察'] }
+  ],
+  activityLevels: ['院级', '校级', '省部级', '国家级', '国际级'],
+  awardLevels: ['特等奖', '一等奖', '二等奖', '三等奖', '优秀奖', '参与奖']
+})
+
+// 模拟图谱数据
+const mockGraphData = {
+  '2021001001': {
+    staticRelations: [
+      { headName: '张三', relation: '隶属院系', tailName: '计算机学院' },
+      { headName: '张三', relation: '所属专业', tailName: '软件工程' },
+      { headName: '张三', relation: '所属班级', tailName: '软工1班' }
+    ],
+    dynamicRelations: [
+      { relation: '比赛获奖', subRelation: '学科竞赛', tailName: '全国大学生程序设计竞赛', timeDimension: '2022-10' },
+      { relation: '比赛获奖', subRelation: '科技创新', tailName: 'ACM-ICPC国际大学生程序设计竞赛', timeDimension: '2023-05' },
+      { relation: '学术科研', subRelation: '科研项目', tailName: '人工智能创新实验', timeDimension: '2023-03' },
+      { relation: '志愿服务', subRelation: '支教活动', tailName: '暑期三下乡社会实践', timeDimension: '2022-07' }
+    ]
+  },
+  '2021001002': {
+    staticRelations: [
+      { headName: '李四', relation: '隶属院系', tailName: '计算机学院' },
+      { headName: '李四', relation: '所属专业', tailName: '计算机科学与技术' },
+      { headName: '李四', relation: '所属班级', tailName: '计科2班' }
+    ],
+    dynamicRelations: [
+      { relation: '比赛获奖', subRelation: '学科竞赛', tailName: '全国大学生数学建模竞赛', timeDimension: '2023-09' },
+      { relation: '学术科研', subRelation: '论文发表', tailName: '区块链技术研究', timeDimension: '2023-06' }
+    ]
+  },
+  '2021001003': {
+    staticRelations: [
+      { headName: '王五', relation: '隶属院系', tailName: '软件学院' },
+      { headName: '王五', relation: '所属专业', tailName: '数字媒体技术' },
+      { headName: '王五', relation: '所属班级', tailName: '数媒1班' }
+    ],
+    dynamicRelations: [
+      { relation: '比赛获奖', subRelation: '文体艺术', tailName: '全国大学生广告艺术大赛', timeDimension: '2023-08' },
+      { relation: '社会实践', subRelation: '企业实习', tailName: '互联网公司实习', timeDimension: '2023-07' }
+    ]
+  },
+  '2021001004': {
+    staticRelations: [
+      { headName: '赵六', relation: '隶属院系', tailName: '信息学院' },
+      { headName: '赵六', relation: '所属专业', tailName: '通信工程' },
+      { headName: '赵六', relation: '所属班级', tailName: '通信1班' }
+    ],
+    dynamicRelations: [
+      { relation: '比赛获奖', subRelation: '科技创新', tailName: '全国大学生电子设计竞赛', timeDimension: '2023-04' },
+      { relation: '学术科研', subRelation: '科研项目', tailName: '5G通信技术研究', timeDimension: '2023-01' },
+      { relation: '志愿服务', subRelation: '赛事服务', tailName: '北京冬奥会志愿者', timeDimension: '2022-02' }
+    ]
+  }
+}
 
 const graphContainerRef = ref(null)
 const relationChartRef = ref(null)
@@ -161,13 +268,6 @@ const relationForm = reactive({
   awardLevel: ''
 })
 
-const relationsConfig = ref({
-  staticRelations: [],
-  dynamicRelations: [],
-  activityLevels: [],
-  awardLevels: []
-})
-
 const availableRelations = computed(() => {
   return dialogType.value === 'static' ? relationsConfig.value.staticRelations : relationsConfig.value.dynamicRelations
 })
@@ -180,49 +280,70 @@ const currentSubCategories = computed(() => {
 const activityLevels = ['院级', '校级', '省部级', '国家级', '国际级']
 const awardLevels = ['特等奖', '一等奖', '二等奖', '三等奖', '优秀奖', '参与奖']
 
-// 加载学生列表
-const loadStudents = async () => {
-  try {
-    const res = await request.get('/student/list')
-    if (res.code === 200 && res.data) {
-      students.value = res.data.records || res.data || []
-    }
-  } catch (error) {
-    console.error('加载学生列表失败:', error)
+// 加载学生列表（模拟）
+const loadStudents = () => {
+  students.value = [
+    { no: '2021001001', name: '张三' },
+    { no: '2021001002', name: '李四' },
+    { no: '2021001003', name: '王五' },
+    { no: '2021001004', name: '赵六' }
+  ]
+}
+
+// 加载关系配置（模拟）
+const loadRelationsConfig = () => {
+  relationsConfig.value = {
+    staticRelations: [
+      { name: '隶属院系', subCategories: [] },
+      { name: '所属专业', subCategories: [] },
+      { name: '所属班级', subCategories: [] }
+    ],
+    dynamicRelations: [
+      { name: '比赛获奖', subCategories: ['学科竞赛', '科技创新', '文体艺术'] },
+      { name: '学术科研', subCategories: ['科研项目', '论文发表', '专利发明'] },
+      { name: '志愿服务', subCategories: ['社区服务', '支教活动', '赛事服务'] },
+      { name: '社会实践', subCategories: ['企业实习', '暑期实践', '调研考察'] }
+    ],
+    activityLevels: ['院级', '校级', '省部级', '国家级', '国际级'],
+    awardLevels: ['特等奖', '一等奖', '二等奖', '三等奖', '优秀奖', '参与奖']
   }
 }
 
-// 加载关系配置
-const loadRelationsConfig = async () => {
-  try {
-    const res = await request.get('/knowledge-graph/relations')
-    if (res.code === 200) {
-      relationsConfig.value = res.data
-    }
-  } catch (error) {
-    console.error('加载关系配置失败:', error)
-  }
-}
-
-// 加载学生知识图谱
-const loadKnowledgeGraph = async (studentNo) => {
+// 加载学生知识图谱（模拟）
+const loadKnowledgeGraph = (studentNo) => {
   if (!studentNo) return
-  
-  try {
-    const graphRes = await request.get(`/knowledge-graph/student/${studentNo}`)
-    if (graphRes.code === 200 && graphRes.data) {
-      quadsData.value = graphRes.data.quads || []
-      initGraphChart(graphRes.data)
-    }
-    
-    const statsRes = await request.get(`/knowledge-graph/student/${studentNo}/stats`)
-    if (statsRes.code === 200 && statsRes.data) {
-      Object.assign(activityStats, statsRes.data)
-      nextTick(() => initStatCharts())
-    }
-  } catch (error) {
-    console.error('加载知识图谱失败:', error)
-  }
+
+  const data = mockGraphData[studentNo] || mockGraphData['2021001001']
+
+  // 更新四元组数据
+  quadsData.value = [
+    ...data.staticRelations.map(kg => ({
+      head: kg.headName,
+      relation: kg.relation,
+      tail: kg.tailName,
+      time: '-',
+      type: 'static'
+    })),
+    ...data.dynamicRelations.map(kg => ({
+      head: kg.headName,
+      relation: kg.relation,
+      tail: kg.tailName,
+      time: kg.timeDimension,
+      type: 'dynamic'
+    }))
+  ]
+
+  // 更新统计数据
+  activityStats.total = quadsData.value.length
+  activityStats.byRelation = { '比赛获奖': 2, '学术科研': 1, '志愿服务': 1, '社会实践': 0 }
+  activityStats.byLevel = { '院级': 1, '校级': 1, '省部级': 1, '国家级': 1, '国际级': 0 }
+  activityStats.byYear = { '2021': 0, '2022': 2, '2023': 2, '2024': 0 }
+
+  // 初始化图表
+  nextTick(() => {
+    initGraphChart(data)
+    initStatCharts()
+  })
 }
 
 // 初始化图谱图表
@@ -387,25 +508,18 @@ const openAddDialog = (type) => {
   dialogVisible.value = true
 }
 
-const submitRelation = async () => {
+const submitRelation = () => {
   if (!relationForm.relation || !relationForm.tailName) {
     ElMessage.warning('请填写完整信息')
     return
   }
-  
-  const url = dialogType.value === 'static' ? '/knowledge-graph/static-relation' : '/knowledge-graph/dynamic-relation'
-  try {
-    const res = await request.post(url, relationForm)
-    if (res.code === 200) {
-      ElMessage.success('添加成功')
-      dialogVisible.value = false
-      loadKnowledgeGraph(selectedStudent.value)
-    } else {
-      ElMessage.error(res.message || '添加失败')
-    }
-  } catch (error) {
-    ElMessage.error('添加失败')
-  }
+
+  // 模拟添加成功
+  ElMessage.success('添加成功（模拟数据）')
+  dialogVisible.value = false
+
+  // 重新加载图谱
+  loadKnowledgeGraph(selectedStudent.value)
 }
 
 watch(activeTab, () => {
@@ -420,6 +534,13 @@ watch(activeTab, () => {
 onMounted(() => {
   loadStudents()
   loadRelationsConfig()
+  // 默认选中第一个学生并加载图谱
+  nextTick(() => {
+    if (students.value.length > 0) {
+      selectedStudent.value = students.value[0].no
+      loadKnowledgeGraph(selectedStudent.value)
+    }
+  })
   window.addEventListener('resize', () => {
     graphChart?.resize()
     relationChart?.resize()

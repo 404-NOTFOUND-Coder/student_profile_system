@@ -156,7 +156,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { statsApi } from '@/api/student'
 
 const router = useRouter()
 
@@ -182,22 +181,36 @@ const handleForm = reactive({
   remark: ''
 })
 
-const loadData = async () => {
+// 模拟预警数据
+const mockWarnings = [
+  { id: 1, studentNo: '2021001001', studentName: '张三', college: '计算机学院', major: '软件工程', warningType: '成绩预警', level: 1, levelName: '一般', warningMessage: '数据结构与算法成绩偏低', createTime: '2024-03-15' },
+  { id: 2, studentNo: '2021001002', studentName: '李四', college: '计算机学院', major: '计算机科学与技术', warningType: '学分预警', level: 2, levelName: '较重', warningMessage: '已获学分不足毕业要求', createTime: '2024-03-12' },
+  { id: 3, studentNo: '2021001003', studentName: '王五', college: '软件学院', major: '软件工程', warningType: '学业困难', level: 3, levelName: '严重', warningMessage: '多门课程不及格', createTime: '2024-03-10' },
+  { id: 4, studentNo: '2021001004', studentName: '赵六', college: '信息学院', major: '通信工程', warningType: '成绩预警', level: 1, levelName: '一般', warningMessage: '高等数学成绩偏低', createTime: '2024-03-08' },
+  { id: 5, studentNo: '2021001005', studentName: '钱七', college: '电子学院', major: '电子科学与技术', warningType: '学分预警', level: 2, levelName: '较重', warningMessage: '必修课学分不足', createTime: '2024-03-05' },
+  { id: 6, studentNo: '2021001006', studentName: '孙八', college: '机械学院', major: '机械设计制造', warningType: '毕业预警', level: 3, levelName: '严重', warningMessage: '毕业设计进度滞后', createTime: '2024-03-01' }
+]
+
+// 加载预警数据（模拟）
+const loadData = () => {
   loading.value = true
-  try {
-    const res = await statsApi.getWarningList({
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize
-    })
-    if (res.code === 200 && res.data) {
-      tableData.value = res.data.records || res.data || []
-      pagination.total = res.data.total || tableData.value.length
-    }
-  } catch (error) {
-    console.error('获取预警列表失败:', error)
-  } finally {
-    loading.value = false
+
+  // 模拟过滤
+  let filtered = [...mockWarnings]
+  if (queryForm.warningType) {
+    filtered = filtered.filter(w => w.warningType === queryForm.warningType)
   }
+  if (queryForm.level) {
+    filtered = filtered.filter(w => w.level === queryForm.level)
+  }
+
+  // 模拟分页
+  pagination.total = filtered.length
+  const start = (pagination.pageNum - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = filtered.slice(start, end)
+
+  loading.value = false
 }
 
 const handleSearch = () => {
@@ -223,7 +236,7 @@ const handleWarning = (row) => {
 }
 
 const submitHandle = () => {
-  ElMessage.success('处理提交成功')
+  ElMessage.success('处理提交成功（模拟）')
   handleVisible.value = false
   loadData()
 }

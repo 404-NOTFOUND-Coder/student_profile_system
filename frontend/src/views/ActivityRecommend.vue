@@ -134,7 +134,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import request from '@/api/index'
 
 const recommendations = ref([])
 const filterForm = reactive({
@@ -161,6 +160,90 @@ const levels = [
   { value: 3, label: '省部级' },
   { value: 4, label: '国家级' },
   { value: 5, label: '国际级' }
+]
+
+// 模拟数据
+const mockData = [
+  {
+    id: 1,
+    activityName: '全国大学生程序设计竞赛',
+    category: '比赛获奖',
+    subCategory: '科技创新',
+    level: '国家级',
+    levelValue: 4,
+    organizer: '教育部高等学校计算机类专业教学指导委员会',
+    registerEndTime: '2024-03-15',
+    activityStartTime: '2024-04-01',
+    activityEndTime: '2024-04-03',
+    location: '电子科技大学',
+    reward: '获得ACM金银铜牌证书，增加保研积分',
+    recommendScore: 92,
+    recommendReason: '根据您的学术研究型画像，这类高难度竞赛能充分发挥您的优势'
+  },
+  {
+    id: 2,
+    activityName: '挑战杯全国大学生课外学术科技作品竞赛',
+    category: '比赛获奖',
+    subCategory: '学术研究',
+    level: '国家级',
+    levelValue: 4,
+    organizer: '共青团中央',
+    registerEndTime: '2024-02-28',
+    activityStartTime: '2024-05-01',
+    activityEndTime: '2024-05-15',
+    location: '待定',
+    reward: '国赛获奖可获得保研资格和创新创业学分',
+    recommendScore: 88,
+    recommendReason: '与您的学术背景高度契合，有助于提升科研能力'
+  },
+  {
+    id: 3,
+    activityName: '大学生创新创业训练计划项目',
+    category: '培训经历',
+    subCategory: '创新创业',
+    level: '省部级',
+    levelValue: 3,
+    organizer: '教育部高等教育司',
+    registerEndTime: '2024-03-30',
+    activityStartTime: '2024-04-01',
+    activityEndTime: '2024-12-31',
+    location: '校内',
+    reward: '国家级立项可获得创新学分和科研经费支持',
+    recommendScore: 75,
+    recommendReason: '建议在课余时间积极参与，提升综合能力'
+  },
+  {
+    id: 4,
+    activityName: '暑期社会实践活动',
+    category: '学生活动',
+    subCategory: '劳动实践',
+    level: '校级',
+    levelValue: 2,
+    organizer: '校团委',
+    registerEndTime: '2024-06-20',
+    activityStartTime: '2024-07-01',
+    activityEndTime: '2024-08-31',
+    location: '各地实践基地',
+    reward: '获得社会实践学分和志愿者时长',
+    recommendScore: 68,
+    recommendReason: '符合您全面发展的需求，建议积极参与'
+  },
+  {
+    id: 5,
+    activityName: '职业生涯规划培训',
+    category: '培训经历',
+    subCategory: '技能培训',
+    level: '校级',
+    levelValue: 2,
+    organizer: '就业指导中心',
+    registerEndTime: '2024-03-10',
+    activityStartTime: '2024-03-15',
+    activityEndTime: '2024-03-16',
+    location: '图书馆报告厅',
+    reward: '帮助学生明确职业发展方向',
+    recommendScore: 65,
+    recommendReason: '建议提前规划职业发展路径'
+  }
 ]
 
 const getLevelType = (level) => {
@@ -195,51 +278,27 @@ const getRemainingDays = (endDate) => {
   return diff
 }
 
-const loadRecommendations = async () => {
-  try {
-    const studentId = localStorage.getItem('studentId') || 1
-    const res = await request.get(`/activity/recommendations/${studentId}`, {
-      params: filterForm
-    })
-    if (res.code === 200) {
-      recommendations.value = res.data || []
-    }
-  } catch (error) {
-    console.error('加载推荐失败:', error)
+const loadRecommendations = () => {
+  let filtered = [...mockData]
+  
+  if (filterForm.category) {
+    filtered = filtered.filter(item => item.category === filterForm.category)
   }
+  if (filterForm.level) {
+    filtered = filtered.filter(item => item.levelValue === filterForm.level)
+  }
+  
+  recommendations.value = filtered
 }
 
-const generateRecommendations = async () => {
-  try {
-    const studentId = localStorage.getItem('studentId') || 1
-    const studentNo = localStorage.getItem('studentNo') || '2021001001'
-    const profileType = localStorage.getItem('profileType') || ''
-    
-    const res = await request.post(`/activity/recommend/${studentId}`, null, {
-      params: { studentNo, profileType, limit: 10 }
-    })
-    if (res.code === 200) {
-      ElMessage.success('推荐已刷新')
-      recommendations.value = res.data || []
-    }
-  } catch (error) {
-    console.error('生成推荐失败:', error)
-    ElMessage.error('生成推荐失败')
-  }
+const generateRecommendations = () => {
+  recommendations.value = [...mockData].sort((a, b) => b.recommendScore - a.recommendScore)
+  ElMessage.success('推荐已刷新')
 }
 
-const updateStatus = async (id, status) => {
-  try {
-    const res = await request.put(`/activity/recommendation/${id}`, null, {
-      params: { status }
-    })
-    if (res.code === 200) {
-      ElMessage.success('状态已更新')
-      loadRecommendations()
-    }
-  } catch (error) {
-    console.error('更新状态失败:', error)
-  }
+const updateStatus = (id, status) => {
+  const statusText = { interested: '感兴趣', applied: '已报名' }
+  ElMessage.success(`已标记为${statusText[status]}`)
 }
 
 const showDetail = (item) => {
@@ -258,11 +317,11 @@ const resetFilter = () => {
   filterForm.category = ''
   filterForm.level = ''
   filterForm.status = ''
-  loadRecommendations()
+  recommendations.value = [...mockData]
 }
 
 onMounted(() => {
-  loadRecommendations()
+  recommendations.value = [...mockData]
 })
 </script>
 

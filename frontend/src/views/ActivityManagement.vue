@@ -170,7 +170,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import request from '@/api/index'
 
 const loading = ref(false)
 const activities = ref([])
@@ -249,6 +248,130 @@ const currentSubCategories = computed(() => {
   return subCategoriesMap[activityForm.category] || []
 })
 
+// 模拟数据
+const mockActivities = [
+  {
+    id: 1,
+    name: '全国大学生程序设计竞赛',
+    category: '比赛获奖',
+    subCategory: '科技创新',
+    level: 4,
+    levelName: '国家级',
+    organizer: '教育部高等学校计算机类专业教学指导委员会',
+    registerStartTime: '2024-03-01',
+    registerEndTime: '2024-03-15',
+    activityStartTime: '2024-04-01',
+    activityEndTime: '2024-04-03',
+    location: '电子科技大学',
+    reward: '获得ACM金银铜牌证书，增加保研积分',
+    requirements: '具有编程基础，建议ACM队成员参加',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 90,
+    targetAudience: '全校本科生'
+  },
+  {
+    id: 2,
+    name: '挑战杯全国大学生课外学术科技作品竞赛',
+    category: '比赛获奖',
+    subCategory: '学术研究',
+    level: 4,
+    levelName: '国家级',
+    organizer: '共青团中央',
+    registerStartTime: '2024-02-01',
+    registerEndTime: '2024-02-28',
+    activityStartTime: '2024-05-01',
+    activityEndTime: '2024-05-15',
+    location: '待定',
+    reward: '国赛获奖可获得保研资格和创新创业学分',
+    requirements: '需有创新项目或科研作品',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 95,
+    targetAudience: '全日制本科生'
+  },
+  {
+    id: 3,
+    name: '大学生创新创业训练计划项目',
+    category: '培训经历',
+    subCategory: '创新创业',
+    level: 3,
+    levelName: '省部级',
+    organizer: '教育部高等教育司',
+    registerStartTime: '2024-01-01',
+    registerEndTime: '2024-03-30',
+    activityStartTime: '2024-04-01',
+    activityEndTime: '2024-12-31',
+    location: '校内',
+    reward: '国家级立项可获得创新学分和科研经费支持',
+    requirements: '有创新创业想法的学生团队',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 85,
+    targetAudience: '全日制学生'
+  },
+  {
+    id: 4,
+    name: '暑期社会实践活动',
+    category: '学生活动',
+    subCategory: '劳动实践',
+    level: 2,
+    levelName: '校级',
+    organizer: '校团委',
+    registerStartTime: '2024-05-01',
+    registerEndTime: '2024-06-20',
+    activityStartTime: '2024-07-01',
+    activityEndTime: '2024-08-31',
+    location: '各地实践基地',
+    reward: '获得社会实践学分和志愿者时长',
+    requirements: '身体健康，需服从安排',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 70,
+    targetAudience: '全日制本科生'
+  },
+  {
+    id: 5,
+    name: '全国大学生英语竞赛',
+    category: '比赛获奖',
+    subCategory: '学术研究',
+    level: 4,
+    levelName: '国家级',
+    organizer: '高等学校大学外语教学研究会',
+    registerStartTime: '2024-02-15',
+    registerEndTime: '2024-03-20',
+    activityStartTime: '2024-04-21',
+    activityEndTime: '2024-04-21',
+    location: '各省级考点',
+    reward: '获奖可获得学分和奖学金评定资格',
+    requirements: '英语水平良好',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 80,
+    targetAudience: '本科生'
+  },
+  {
+    id: 6,
+    name: '职业生涯规划培训',
+    category: '培训经历',
+    subCategory: '技能培训',
+    level: 2,
+    levelName: '校级',
+    organizer: '就业指导中心',
+    registerStartTime: '2024-03-01',
+    registerEndTime: '2024-03-10',
+    activityStartTime: '2024-03-15',
+    activityEndTime: '2024-03-16',
+    location: '图书馆报告厅',
+    reward: '帮助学生明确职业发展方向',
+    requirements: '无特殊要求',
+    status: 'published',
+    enableRecommend: 1,
+    recommendWeight: 60,
+    targetAudience: '大一、大二学生'
+  }
+]
+
 const getLevelType = (level) => {
   const typeMap = { 1: 'info', 2: 'success', 3: 'warning', 4: 'danger', 5: 'danger' }
   return typeMap[level] || 'info'
@@ -270,25 +393,26 @@ const formatDate = (date) => {
   return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
-const loadActivities = async () => {
+const loadActivities = () => {
   loading.value = true
-  try {
-    const res = await request.get('/activity/page', {
-      params: {
-        pageNum: pagination.pageNum,
-        pageSize: pagination.pageSize,
-        ...filterForm
-      }
-    })
-    if (res.code === 200 && res.data) {
-      activities.value = res.data.records || res.data.list || []
-      pagination.total = res.data.total || 0
+  
+  setTimeout(() => {
+    let filtered = [...mockActivities]
+    
+    if (filterForm.category) {
+      filtered = filtered.filter(item => item.category === filterForm.category)
     }
-  } catch (error) {
-    console.error('加载活动列表失败:', error)
-  } finally {
+    if (filterForm.level) {
+      filtered = filtered.filter(item => item.level === filterForm.level)
+    }
+    if (filterForm.status) {
+      filtered = filtered.filter(item => item.status === filterForm.status)
+    }
+    
+    activities.value = filtered
+    pagination.total = filtered.length
     loading.value = false
-  }
+  }, 300)
 }
 
 const openAddDialog = () => {
@@ -308,11 +432,8 @@ const deleteActivity = async (row) => {
     await ElMessageBox.confirm('确定要删除该活动吗?', '提示', {
       type: 'warning'
     })
-    const res = await request.delete(`/activity/${row.id}`)
-    if (res.code === 200) {
-      ElMessage.success('删除成功')
-      loadActivities()
-    }
+    ElMessage.success('删除成功')
+    loadActivities()
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('删除失败')
@@ -325,18 +446,9 @@ const submitForm = async () => {
   
   await formRef.value.validate(async (valid) => {
     if (valid) {
-      try {
-        const url = isEdit.value ? `/activity/${activityForm.id}` : '/activity'
-        const method = isEdit.value ? 'put' : 'post'
-        const res = await request[method](url, activityForm)
-        if (res.code === 200) {
-          ElMessage.success(isEdit.value ? '更新成功' : '添加成功')
-          dialogVisible.value = false
-          loadActivities()
-        }
-      } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '添加失败')
-      }
+      ElMessage.success(isEdit.value ? '更新成功' : '添加成功')
+      dialogVisible.value = false
+      loadActivities()
     }
   })
 }

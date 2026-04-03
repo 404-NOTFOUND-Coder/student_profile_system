@@ -173,7 +173,51 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { studentApi } from '@/api/student'
+
+// 生成100个模拟学生数据
+const generateMockStudents = () => {
+  const colleges = ['计算机学院', '软件学院', '信息学院', '电子学院', '机械学院']
+  const majors = {
+    '计算机学院': ['计算机科学与技术', '软件工程', '信息安全', '数据科学'],
+    '软件学院': ['软件工程', '数字媒体技术', '物联网工程'],
+    '信息学院': ['通信工程', '电子信息工程', '信息工程'],
+    '电子学院': ['电子科学与技术', '微电子科学与工程'],
+    '机械学院': ['机械设计制造', '机械电子工程', '材料成型']
+  }
+  const classes = ['1班', '2班', '3班', '4班']
+  const statuses = [1, 2, 3, 4] // 在读、休学、退学、毕业
+  const surnames = ['张', '李', '王', '刘', '陈', '杨', '黄', '赵', '周', '吴', '徐', '孙', '马', '朱', '胡', '郭', '何', '高', '林', '罗']
+
+  const students = []
+  for (let i = 1; i <= 100; i++) {
+    const college = colleges[Math.floor(Math.random() * colleges.length)]
+    const majorList = majors[college]
+    const major = majorList[Math.floor(Math.random() * majorList.length)]
+    const className = `${major.slice(0, 2)}软工${classes[Math.floor(Math.random() * classes.length)]}`
+    const enrollmentYear = 2020 + Math.floor(Math.random() * 5)
+    const status = statuses[Math.floor(Math.random() * 4)]
+    const gpa = (2.5 + Math.random() * 1.5).toFixed(2)
+
+    students.push({
+      id: i,
+      studentNo: `${enrollmentYear}${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
+      name: surnames[Math.floor(Math.random() * surnames.length)] + ['明', '华', '伟', '强', '丽', '敏', '军', '杰', '涛', '鹏'][Math.floor(Math.random() * 10)],
+      gender: Math.random() > 0.5 ? 1 : 2,
+      birthday: `${1998 + Math.floor(Math.random() * 6)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+      phone: `138${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
+      email: `student${i}@university.edu.cn`,
+      college,
+      major,
+      className,
+      enrollmentYear,
+      studentStatus: status,
+      gpa: parseFloat(gpa)
+    })
+  }
+  return students
+}
+
+const allMockStudents = generateMockStudents()
 
 const router = useRouter()
 
@@ -224,31 +268,32 @@ const years = computed(() => {
 
 const dialogTitle = computed(() => isEdit.value ? '编辑学生' : '新增学生')
 
-// 获取列表数据
-const fetchList = async () => {
+// 获取列表数据（模拟）
+const fetchList = () => {
   loading.value = true
-  try {
-    const params = {
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize,
-      name: queryForm.name,
-      college: queryForm.college,
-      major: queryForm.major,
-      enrollmentYear: queryForm.enrollmentYear
-    }
-    console.log('请求参数:', params)
-    const res = await studentApi.list(params)
-    console.log('响应结果:', res)
-    if (res.code === 200 && res.data) {
-      tableData.value = res.data.records || res.data
-      pagination.total = res.data.total || tableData.value.length
-      console.log('表格数据:', tableData.value, '总数:', pagination.total)
-    }
-  } catch (error) {
-    console.error('获取列表失败:', error)
-  } finally {
-    loading.value = false
+
+  // 模拟过滤
+  let filtered = [...allMockStudents]
+  if (queryForm.name) {
+    filtered = filtered.filter(s => s.name.includes(queryForm.name))
   }
+  if (queryForm.college) {
+    filtered = filtered.filter(s => s.college === queryForm.college)
+  }
+  if (queryForm.major) {
+    filtered = filtered.filter(s => s.major.includes(queryForm.major))
+  }
+  if (queryForm.enrollmentYear) {
+    filtered = filtered.filter(s => s.enrollmentYear === queryForm.enrollmentYear)
+  }
+
+  // 模拟分页
+  pagination.total = filtered.length
+  const start = (pagination.pageNum - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  tableData.value = filtered.slice(start, end)
+
+  loading.value = false
 }
 
 const handleSearch = () => {
@@ -277,19 +322,18 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-const handleSubmit = async () => {
-  try {
-    await formRef.value.validate()
-    if (isEdit.value) {
-      ElMessage.success('更新成功')
-    } else {
-      ElMessage.success('创建成功')
+const handleSubmit = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      if (isEdit.value) {
+        ElMessage.success('更新成功（模拟）')
+      } else {
+        ElMessage.success('创建成功（模拟）')
+      }
+      dialogVisible.value = false
+      fetchList()
     }
-    dialogVisible.value = false
-    fetchList()
-  } catch (error) {
-    console.error('表单验证失败:', error)
-  }
+  })
 }
 
 const handleDelete = (row) => {

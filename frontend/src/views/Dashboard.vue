@@ -84,7 +84,6 @@
 import { ref, onMounted, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import request from '@/api/index'
 
 const router = useRouter()
 
@@ -146,65 +145,34 @@ const updateCollegeChart = () => {
   })
 }
 
-const loadData = async () => {
-  try {
-    // 调用后端API获取统计数据
-    const statsRes = await request.get('/dashboard/stats')
-    console.log('statsRes:', statsRes)
-    if (statsRes.code === 200 && statsRes.data) {
-      stats.totalStudents = statsRes.data.totalStudents || 0
-      stats.activeStudents = statsRes.data.activeStudents || 0
-      stats.warningCount = statsRes.data.warningCount || 0
-      stats.avgGpa = statsRes.data.avgGpa || 0
-    }
+const loadData = () => {
+  // 使用模拟数据
+  stats.totalStudents = 40
+  stats.activeStudents = 38
+  stats.warningCount = 5
+  stats.avgGpa = 3.45
 
-    // 调用后端API获取预警列表
-    const warningsRes = await request.get('/dashboard/warnings')
-    console.log('warningsRes:', warningsRes)
-    if (warningsRes.code === 200 && warningsRes.data) {
-      warnings.value = warningsRes.data.map(w => ({
-        studentNo: w.studentNo || '',
-        studentName: w.studentName || w.name || '',
-        warningType: w.warningType || '成绩预警',
-        level: w.level || 1,
-        levelName: w.levelName || '一般',
-        createTime: w.createTime ? new Date(w.createTime).toLocaleDateString() : ''
-      }))
-    }
+  warnings.value = [
+    { studentNo: '2021001001', studentName: '张三', warningType: '成绩预警', level: 2, levelName: '一般', createTime: '2024-03-15' },
+    { studentNo: '2021001002', studentName: '李四', warningType: '学分预警', level: 1, levelName: '严重', createTime: '2024-03-12' },
+    { studentNo: '2021001003', studentName: '王五', warningType: '学业困难', level: 3, levelName: '特别严重', createTime: '2024-03-10' }
+  ]
 
-    // 调用后端API获取画像示例
-    const profilesRes = await request.get('/dashboard/profile-examples')
-    console.log('profilesRes:', profilesRes)
-    if (profilesRes.code === 200 && profilesRes.data) {
-      sampleProfiles.value = profilesRes.data.map(p => ({
-        studentNo: p.studentNo || '',
-        name: p.name || '未知',
-        profileType: p.profileType || '待分析',
-        gpa: p.gpa || 0,
-        abilityLevel: p.abilityLevel || 'C',
-        abilityType: p.abilityType || 'info',
-        avatarColor: p.avatarColor || '#409eff'
-      }))
-    }
+  sampleProfiles.value = [
+    { studentNo: '2021001001', name: '张三', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
+    { studentNo: '2021001002', name: '李四', profileType: '实践应用型', gpa: 3.42, abilityLevel: 'B', abilityType: 'warning', avatarColor: '#67c23a' },
+    { studentNo: '2021001003', name: '王五', profileType: '复合探索型', gpa: 3.15, abilityLevel: 'C', abilityType: 'info', avatarColor: '#e6a23c' }
+  ]
 
-    // 调用后端API获取学院统计数据
-    const collegeRes = await request.get('/dashboard/college-stats')
-    console.log('collegeRes:', collegeRes)
-    if (collegeRes.code === 200 && collegeRes.data) {
-      collegeChartData.value = collegeRes.data
-      updateCollegeChart()
-    }
+  collegeChartData.value = [
+    { name: '计算机学院', value: 120 },
+    { name: '软件学院', value: 98 },
+    { name: '信息学院', value: 85 },
+    { name: '电子学院', value: 72 },
+    { name: '机械学院', value: 65 }
+  ]
 
-  } catch (error) {
-    console.error('加载数据失败:', error)
-    // 如果API调用失败，使用模拟数据作为后备
-    stats.totalStudents = 40
-    stats.activeStudents = 38
-    stats.warningCount = 5
-    stats.avgGpa = 3.45
-    warnings.value = []
-    sampleProfiles.value = []
-  }
+  updateCollegeChart()
 }
 
 const getWarningType = (level) => {

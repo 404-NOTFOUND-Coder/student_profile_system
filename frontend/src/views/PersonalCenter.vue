@@ -156,7 +156,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import request from '@/api/index'
 
 const avatarBgColor = ref('#409eff')
 const emailVerified = ref(true)
@@ -164,33 +163,22 @@ const showPasswordDialog = ref(false)
 const passwordFormRef = ref(null)
 
 const userInfo = reactive({
-  name: '',
-  employeeNo: '',
-  role: '',
-  department: '',
-  position: '',
-  email: '',
-  phone: '',
-  studentCount: 0,
-  loginCount: 0,
-  avgGpa: 0
+  name: '管理员',
+  employeeNo: '20240001',
+  role: '系统管理员',
+  department: '计算机学院',
+  position: '教学秘书',
+  email: 'admin@university.edu.cn',
+  phone: '13800138000',
+  studentCount: 40,
+  loginCount: 128,
+  avgGpa: 3.45
 })
 
-// 获取用户信息
-const fetchUserInfo = async () => {
-  try {
-    const res = await request.get('/user/info')
-    if (res.code === 200 && res.data) {
-      Object.assign(userInfo, res.data)
-    }
-  } catch (error) {
-    console.error('获取用户信息失败:', error)
-  }
+// 模拟获取用户信息（使用本地数据）
+const fetchUserInfo = () => {
+  // userInfo 已是本地模拟数据，无需获取
 }
-
-onMounted(() => {
-  fetchUserInfo()
-})
 
 const passwordForm = reactive({
   oldPassword: '',

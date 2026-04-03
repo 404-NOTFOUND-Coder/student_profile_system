@@ -26,7 +26,6 @@ npm run build
 
 ```
 src/
-├── api/              # API 接口封装
 ├── assets/           # 静态资源
 │   └── styles/       # 全局样式
 ├── components/       # 公共组件
@@ -34,7 +33,51 @@ src/
 ├── stores/           # Pinia 状态管理
 ├── utils/            # 工具函数
 └── views/            # 页面组件
-    └── student/      # 学生模块
+    ├── Layout.vue            # 布局组件
+    ├── Dashboard.vue         # 首页仪表盘
+    ├── Login.vue             # 登录页
+    ├── ActivityManagement.vue # 活动管理
+    ├── ActivityRecommend.vue  # 活动推荐
+    ├── Warning.vue           # 学业预警
+    ├── Analytics.vue         # 数据分析
+    ├── KnowledgeGraph.vue    # 知识图谱
+    └── student/              # 学生模块
+        ├── StudentList.vue    # 学生列表
+        └── StudentProfile.vue # 学生画像详情
+```
+
+## 📝 模拟数据说明
+
+本项目所有数据均为前端模拟数据，不依赖后端接口。
+
+### 模拟数据位置
+
+各视图组件中的 `mock` 数据直接在组件内部定义：
+
+- **Dashboard.vue** - 首页统计数据、预警列表、样本画像
+- **StudentList.vue** - 100个学生信息
+- **StudentProfile.vue** - 学生画像详情数据
+- **ActivityManagement.vue** - 活动管理数据
+- **ActivityRecommend.vue** - 活动推荐数据
+- **Warning.vue** - 学业预警数据
+- **Analytics.vue** - 数据分析图表配置
+- **KnowledgeGraph.vue** - 知识图谱数据
+
+### 添加/修改模拟数据
+
+直接在对应组件的 `<script setup>` 中修改 mock 数据即可：
+
+```javascript
+// 示例：在 StudentList.vue 中添加新学生
+const allMockStudents = [
+  // ... 现有数据
+  {
+    id: 101,
+    studentNo: '2021001101',
+    name: '新学生姓名',
+    // ... 其他字段
+  }
+]
 ```
 
 ## 🎨 开发规范
@@ -52,7 +95,6 @@ src/
 // 1. 导入
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { studentApi } from '@/api/student'
 
 // 2. 响应式数据
 const loading = ref(false)
@@ -61,15 +103,12 @@ const data = ref([])
 // 3. 计算属性
 const computedData = computed(() => data.value.length)
 
-// 4. 方法
-const fetchData = async () => {
+// 4. 方法（使用模拟数据）
+const fetchData = () => {
   loading.value = true
-  try {
-    const res = await studentApi.list()
-    data.value = res.data
-  } finally {
-    loading.value = false
-  }
+  // 直接使用本地模拟数据
+  data.value = mockData
+  loading.value = false
 }
 
 // 5. 生命周期
@@ -84,30 +123,6 @@ onMounted(() => {
   /* SCSS 样式 */
 }
 </style>
-```
-
-### API 调用规范
-
-```javascript
-// api/student.js
-import request from './request'
-
-export const studentApi = {
-  // GET 请求
-  list(params) {
-    return request.get('/student/list', { params })
-  },
-  
-  // POST 请求
-  create(data) {
-    return request.post('/student', data)
-  },
-  
-  // 路径参数
-  getById(id) {
-    return request.get(`/student/${id}`)
-  }
-}
 ```
 
 ## 📊 ECharts 使用
@@ -162,10 +177,10 @@ const radarOption = {
 router.beforeEach((to, from, next) => {
   // 设置页面标题
   if (to.meta.title) {
-    document.title = to.meta.title + ' - 系统名称'
+    document.title = to.meta.title + ' - 学生画像系统'
   }
-  
-  // 权限验证
+
+  // 权限验证（如需要）
   const token = localStorage.getItem('token')
   if (to.meta.requireAuth && !token) {
     next('/login')
