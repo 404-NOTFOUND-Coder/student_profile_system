@@ -167,17 +167,32 @@ const handleCommand = (command) => {
     border-right: none;
     background: transparent;
     
-    :deep(.el-menu-item) {
+    :deep(.el-menu-item),
+    :deep(.el-sub-menu__title) {
       color: #bfcbd9;
       
       &:hover {
         background: #263445;
         color: #409eff;
       }
+    }
+    
+    :deep(.el-menu-item.is-active) {
+      background: #409eff;
+      color: #fff;
+    }
+    
+    :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+      color: #409eff;
+    }
+    
+    :deep(.el-sub-menu .el-menu-item) {
+      padding-left: 50px !important;
       
       &.is-active {
-        background: #409eff;
-        color: #fff;
+        background: #263445;
+        color: #409eff;
+        border-right: 3px solid #409eff;
       }
     }
   }
