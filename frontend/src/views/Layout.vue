@@ -196,9 +196,8 @@ const handleCommand = (command) => {
       }
       
       &.is-active {
-        background: #263445;
-        color: #409eff;
-        border-right: 3px solid #409eff;
+        background: #409eff;
+        color: #fff;
       }
     }
   }
