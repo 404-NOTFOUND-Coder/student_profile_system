@@ -142,7 +142,7 @@ const handleCommand = (command) => {
 }
 
 .aside {
-  background: #304156;
+  background: #1e1e1e;
   transition: width 0.3s;
   overflow: hidden;
   
@@ -155,7 +155,7 @@ const handleCommand = (command) => {
     color: #fff;
     font-size: 16px;
     font-weight: bold;
-    background: #263445;
+    background: #252525;
     
     img {
       width: 32px;
@@ -165,15 +165,16 @@ const handleCommand = (command) => {
   
   .menu {
     border-right: none;
-    background: transparent;
+    background: #1e1e1e;
     
     :deep(.el-menu-item),
     :deep(.el-sub-menu__title) {
-      color: #bfcbd9;
+      color: #a0a0a0;
+      background: transparent;
       
       &:hover {
-        background: #263445;
-        color: #409eff;
+        color: #fff;
+        background: #2d2d2d;
       }
     }
     
@@ -183,15 +184,18 @@ const handleCommand = (command) => {
     }
     
     :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-      color: #409eff;
+      color: #fff;
+      background: #2d2d2d;
     }
     
     :deep(.el-sub-menu .el-menu-item) {
       padding-left: 50px !important;
-      color: #bfcbd9;
+      color: #909090;
+      background: #1e1e1e;
 
       &:hover {
         color: #fff;
+        background: #2d2d2d;
       }
 
       &.is-active {
