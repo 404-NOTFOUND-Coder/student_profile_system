@@ -33,6 +33,26 @@
           <el-icon><DataAnalysis /></el-icon>
           <template #title>数据分析</template>
         </el-menu-item>
+        
+        <el-sub-menu index="activity">
+          <template #title>
+            <el-icon><Bell /></el-icon>
+            <span>活动管理</span>
+          </template>
+          <el-menu-item index="/activity/recommend">
+            <el-icon><Bell /></el-icon>
+            <template #title>活动推荐</template>
+          </el-menu-item>
+          <el-menu-item index="/activity/manage">
+            <el-icon><Management /></el-icon>
+            <template #title>活动管理</template>
+          </el-menu-item>
+        </el-sub-menu>
+        
+        <el-menu-item index="/knowledge-graph">
+          <el-icon><Connection /></el-icon>
+          <template #title>知识图谱</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 

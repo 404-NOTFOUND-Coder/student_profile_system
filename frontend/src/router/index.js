@@ -43,6 +43,24 @@ const routes = [
         meta: { title: '数据分析', icon: 'DataAnalysis' }
       },
       {
+        path: 'knowledge-graph',
+        name: 'KnowledgeGraph',
+        component: () => import('@/views/KnowledgeGraph.vue'),
+        meta: { title: '知识图谱', icon: 'Connection' }
+      },
+      {
+        path: 'activity/recommend',
+        name: 'ActivityRecommend',
+        component: () => import('@/views/ActivityRecommend.vue'),
+        meta: { title: '活动推荐', icon: 'Bell' }
+      },
+      {
+        path: 'activity/manage',
+        name: 'ActivityManagement',
+        component: () => import('@/views/ActivityManagement.vue'),
+        meta: { title: '活动管理', icon: 'Management' }
+      },
+      {
         path: 'personal-center',
         name: 'PersonalCenter',
         component: () => import('@/views/PersonalCenter.vue'),
