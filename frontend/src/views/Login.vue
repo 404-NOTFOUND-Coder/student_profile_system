@@ -10,18 +10,18 @@
 
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0">
         <el-form-item prop="username">
-          <el-input 
-            v-model="form.username" 
+          <el-input
+            v-model="form.username"
             placeholder="请输入用户名"
             prefix-icon="User"
             size="large"
           />
         </el-form-item>
-        
+
         <el-form-item prop="password">
-          <el-input 
-            v-model="form.password" 
-            type="password" 
+          <el-input
+            v-model="form.password"
+            type="password"
             placeholder="请输入密码"
             prefix-icon="Lock"
             size="large"
@@ -35,10 +35,10 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button 
-            type="primary" 
-            size="large" 
-            :loading="loading" 
+          <el-button
+            type="primary"
+            size="large"
+            :loading="loading"
             class="login-btn"
             @click="handleLogin"
           >
@@ -48,7 +48,13 @@
       </el-form>
 
       <div class="login-footer">
-        <span>默认账号: admin / admin123</span>
+        <span class="demo-accounts">测试账号：</span>
+        <div class="account-list">
+          <span>系统管理员：admin / admin123</span>
+          <span>教务处老师：jiaowu / jiaowu123</span>
+          <span>辅导员：fudaoyuan / fudaoyuan123</span>
+          <span>普通学生：student / student123</span>
+        </div>
       </div>
     </el-card>
   </div>
@@ -58,6 +64,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { userAccounts } from '@/data/mockData'
 
 const router = useRouter()
 
@@ -65,8 +72,8 @@ const formRef = ref(null)
 const loading = ref(false)
 
 const form = reactive({
-  username: 'admin',
-  password: 'admin123',
+  username: '',
+  password: '',
   remember: false
 })
 
@@ -79,20 +86,26 @@ const handleLogin = async () => {
   try {
     await formRef.value.validate()
     loading.value = true
-    
-    // 模拟登录
-    setTimeout(() => {
-      ElMessage.success('登录成功')
+
+    // 查找匹配的账号
+    const account = userAccounts.find(
+      u => u.username === form.username && u.password === form.password
+    )
+
+    if (account) {
+      ElMessage.success(`欢迎 ${account.name}（${account.roleName}）`)
       localStorage.setItem('token', 'mock-jwt-token')
-      // 保存用户角色：admin=管理员, teacher=老师, student=学生
-      const role = form.username === 'admin' ? 'admin' : form.username === 'teacher' ? 'teacher' : 'student'
-      localStorage.setItem('userRole', role)
+      localStorage.setItem('userRole', account.role)
+      localStorage.setItem('userInfo', JSON.stringify(account))
       router.push('/dashboard')
-      loading.value = false
-    }, 800)
-    
+    } else {
+      ElMessage.error('用户名或密码错误')
+    }
+
+    loading.value = false
   } catch (error) {
     console.error('表单验证失败:', error)
+    loading.value = false
   }
 }
 </script>
@@ -136,5 +149,19 @@ const handleLogin = async () => {
   color: #909399;
   font-size: 12px;
   margin-top: 16px;
+
+  .demo-accounts {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: #606266;
+  }
 }
 </style>

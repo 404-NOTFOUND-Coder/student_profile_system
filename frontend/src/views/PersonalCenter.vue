@@ -158,7 +158,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { allStudents } from '@/data/mockData'
+import { allStudents, userAccounts } from '@/data/mockData'
 
 // 获取用户角色
 const userRole = computed(() => localStorage.getItem('userRole') || 'admin')
@@ -169,14 +169,17 @@ const emailVerified = ref(true)
 const showPasswordDialog = ref(false)
 const passwordFormRef = ref(null)
 
+// 从localStorage获取用户信息
+const storedUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+
 const userInfo = reactive({
-  name: '管理员',
-  employeeNo: '20240001',
-  role: '系统管理员',
-  department: '计算机学院',
-  position: '教学秘书',
-  email: 'admin@university.edu.cn',
-  phone: '13800138000',
+  name: storedUserInfo.name || '管理员',
+  employeeNo: storedUserInfo.employeeNo || '20240001',
+  role: storedUserInfo.roleName || '系统管理员',
+  department: storedUserInfo.department || '计算机学院',
+  position: storedUserInfo.position || '教学秘书',
+  email: storedUserInfo.email || 'admin@university.edu.cn',
+  phone: storedUserInfo.phone || '13800138000',
   studentCount: allStudents.length,
   loginCount: 128,
   avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))

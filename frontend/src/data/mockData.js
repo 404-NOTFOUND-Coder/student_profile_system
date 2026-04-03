@@ -365,3 +365,49 @@ export const majorStats = Object.entries(majorMapping).flatMap(([college, majors
     value: allStudents.filter(s => s.major === major).length
   }))
 )
+
+// 用户账号数据
+export const userAccounts = [
+  {
+    username: 'admin',
+    password: 'admin123',
+    role: 'admin',
+    roleName: '系统管理员',
+    name: '管理员',
+    employeeNo: '20240001',
+    department: '信息中心',
+    position: '系统管理员'
+  },
+  {
+    username: 'jiaowu',
+    password: 'jiaowu123',
+    role: 'teacher',
+    roleName: '教务处老师',
+    name: '张教务',
+    employeeNo: '20240002',
+    department: '教务处',
+    position: '教务科科长'
+  },
+  {
+    username: 'fudaoyuan',
+    password: 'fudaoyuan123',
+    role: 'counselor',
+    roleName: '辅导员',
+    name: '李辅导员',
+    employeeNo: '20240003',
+    department: '计算机学院',
+    position: '2021级辅导员'
+  },
+  {
+    username: 'student',
+    password: 'student123',
+    role: 'student',
+    roleName: '普通学生',
+    name: '张三',
+    employeeNo: '20240004',
+    studentNo: '2021001001',
+    college: '计算机学院',
+    major: '软件工程',
+    className: '软工1班'
+  }
+]
