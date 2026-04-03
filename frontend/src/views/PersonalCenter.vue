@@ -26,7 +26,7 @@
               <div class="stat-value">{{ userInfo.loginCount }}</div>
               <div class="stat-label">登录次数</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-item" v-if="isStudent">
               <div class="stat-value">{{ userInfo.avgGpa }}</div>
               <div class="stat-label">平均绩点</div>
             </div>
@@ -157,6 +157,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { allStudents } from '@/data/mockData'
+
+// 获取用户角色
+const userRole = computed(() => localStorage.getItem('userRole') || 'admin')
+const isStudent = computed(() => userRole.value === 'student')
 
 const avatarBgColor = ref('#409eff')
 const emailVerified = ref(true)
