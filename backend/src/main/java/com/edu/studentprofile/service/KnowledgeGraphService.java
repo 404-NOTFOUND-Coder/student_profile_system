@@ -1,6 +1,5 @@
 package com.edu.studentprofile.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.edu.studentprofile.entity.KnowledgeGraph;
 import com.edu.studentprofile.mapper.KnowledgeGraphMapper;

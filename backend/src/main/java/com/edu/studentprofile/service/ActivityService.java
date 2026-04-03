@@ -11,7 +11,7 @@ import com.edu.studentprofile.mapper.ActivityRecommendationMapper;
 import com.edu.studentprofile.mapper.KnowledgeGraphMapper;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -176,17 +176,17 @@ public class ActivityService extends ServiceImpl<ActivityMapper, Activity> {
         if (profileType != null) {
             switch (profileType) {
                 case "学术研究型":
-                    if (Boolean.TRUE.equals(activity.getRecommendToResearchType())) {
+                    if (Integer.valueOf(1).equals(activity.getRecommendToResearchType())) {
                         score += 20;
                     }
                     break;
                 case "创新创业型":
-                    if (Boolean.TRUE.equals(activity.getRecommendToStartupType())) {
+                    if (Integer.valueOf(1).equals(activity.getRecommendToStartupType())) {
                         score += 20;
                     }
                     break;
                 case "实践应用型":
-                    if (activity.getCategory() != null && 
+                    if (activity.getCategory() != null &&
                         (activity.getCategory().equals("比赛获奖") || activity.getCategory().equals("社会实践"))) {
                         score += 15;
                     }
@@ -251,7 +251,13 @@ public class ActivityService extends ServiceImpl<ActivityMapper, Activity> {
      * 保存推荐结果
      */
     public boolean saveRecommendations(List<ActivityRecommendation> recommendations) {
-        return recommendationMapper.insertBatchSomeColumn(recommendations) > 0;
+        if (recommendations == null || recommendations.isEmpty()) {
+            return true;
+        }
+        for (ActivityRecommendation rec : recommendations) {
+            recommendationMapper.insert(rec);
+        }
+        return true;
     }
 
     /**
