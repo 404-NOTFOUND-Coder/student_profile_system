@@ -36,8 +36,8 @@
         
         <el-sub-menu index="activity">
           <template #title>
-            <el-icon><Bell /></el-icon>
-            <span>活动管理</span>
+            <el-icon><Calendar /></el-icon>
+            <span>活动中心</span>
           </template>
           <el-menu-item index="/activity/recommend">
             <el-icon><Bell /></el-icon>
