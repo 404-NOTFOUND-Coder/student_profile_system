@@ -188,6 +188,11 @@ const handleCommand = (command) => {
     
     :deep(.el-sub-menu .el-menu-item) {
       padding-left: 50px !important;
+      color: #bfcbd9;
+      
+      &:hover {
+        color: #409eff;
+      }
       
       &.is-active {
         background: #263445;
