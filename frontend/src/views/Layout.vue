@@ -191,6 +191,7 @@ const handleCommand = (command) => {
       color: #bfcbd9;
       
       &:hover {
+        background: #263445;
         color: #409eff;
       }
       
