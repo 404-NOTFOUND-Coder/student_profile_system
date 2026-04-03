@@ -527,19 +527,21 @@ CREATE TABLE knowledge_graph (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 插入知识图谱测试数据（基于学生1的静态关系和活动）
-INSERT INTO knowledge_graph (head_type, head_id, head_name, relation_type, relation, tail_type, tail_name, event_time, time_dimension) VALUES
-('student', '2021001001', '张三', 'static_relation', '隶属院系', 'college', '计算机学院', NULL, NULL),
-('student', '2021001001', '张三', 'static_relation', '隶属专业', 'major', '计算机科学与技术', NULL, NULL),
-('student', '2021001001', '张三', 'static_relation', '性别', 'gender', '男', NULL, NULL),
-('student', '2021001001', '张三', 'static_relation', '年级', 'grade', '2021级', NULL, NULL),
-('student', '2021001001', '张三', 'static_relation', '班级', 'class', '计算机1班', NULL, NULL),
-('student', '2021001001', '张三', 'static_relation', '来自于', 'hometown', '四川省成都市', NULL, NULL),
-('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '科技创新', 'activity', '全国大学生程序设计竞赛', '2022-10-15', '2022-10'),
-('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '学术研究', 'activity', 'ACM-ICPC区域赛银奖', '2022-10-15', '2022-10'),
-('student', '2021001001', '张三', 'dynamic_relation', '培训经历', '技能培训', 'activity', '软件工程培训', '2023-01-01', '2023-01'),
-('student', '2021001001', '张三', 'dynamic_relation', '学生活动', '社团活动', 'activity', '学生会主席', '2023-09-01', '2023-09'),
-('student', '2021001001', '张三', 'dynamic_relation', '个人荣誉', '三好学生', 'activity', '校级三好学生', '2023-12-01', '2023-12'),
-('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '创新创业', 'activity', '挑战杯银奖', '2024-05-01', '2024-05');
+INSERT INTO knowledge_graph (head_type, head_id, head_name, relation_type, relation, tail_type, tail_name) VALUES
+('student', '2021001001', '张三', 'static_relation', '隶属院系', 'college', '计算机学院'),
+('student', '2021001001', '张三', 'static_relation', '隶属专业', 'major', '计算机科学与技术'),
+('student', '2021001001', '张三', 'static_relation', '性别', 'gender', '男'),
+('student', '2021001001', '张三', 'static_relation', '年级', 'grade', '2021级'),
+('student', '2021001001', '张三', 'static_relation', '班级', 'class', '计算机1班'),
+('student', '2021001001', '张三', 'static_relation', '来自于', 'hometown', '四川省成都市');
+
+INSERT INTO knowledge_graph (head_type, head_id, head_name, relation_type, relation, sub_relation, tail_type, tail_name, time_dimension, activity_level, award_level) VALUES
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '科技创新', 'activity', '全国大学生程序设计竞赛', '2022-10', '国家级', '银奖'),
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '学术研究', 'activity', 'ACM-ICPC区域赛银奖', '2022-10', '国家级', '银奖'),
+('student', '2021001001', '张三', 'dynamic_relation', '培训经历', '技能培训', 'activity', '软件工程培训', '2023-01', '校级', NULL),
+('student', '2021001001', '张三', 'dynamic_relation', '学生活动', '社团活动', 'activity', '学生会主席', '2023-09', '校级', NULL),
+('student', '2021001001', '张三', 'dynamic_relation', '个人荣誉', '三好学生', 'activity', '校级三好学生', '2023-12', '校级', NULL),
+('student', '2021001001', '张三', 'dynamic_relation', '比赛获奖', '创新创业', 'activity', '挑战杯银奖', '2024-05', '国家级', '银奖');
 
 -- 更新统计查询
 SELECT '学生总数' as 项目, COUNT(*) as 数量 FROM sys_student
