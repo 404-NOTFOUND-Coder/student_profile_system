@@ -43,15 +43,14 @@
           <el-table :data="warnings" style="width: 100%">
             <el-table-column prop="studentNo" label="学号" width="120" />
             <el-table-column prop="studentName" label="姓名" width="100" />
-            <el-table-column prop="warningType" label="预警类型" width="100" />
-            <el-table-column prop="level" label="等级">
+            <el-table-column prop="warningType" label="预警类型" width="100">
               <template #default="{ row }">
                 <el-tag :type="getWarningType(row.level)" size="small">
                   {{ row.levelName }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="createTime" label="时间" />
+            <el-table-column prop="warningMessage" label="预警信息" />
           </el-table>
         </el-card>
       </el-col>
@@ -60,7 +59,7 @@
           <template #header>
             <span>学生画像示例</span>
           </template>
-          <div v-for="profile in sampleProfiles" :key="profile.studentNo" 
+          <div v-for="profile in sampleProfiles" :key="profile.studentNo"
                class="profile-item" @click="goToProfile(profile.studentNo)">
             <el-avatar :size="40" :style="{ background: profile.avatarColor }">
               {{ profile.name[0] }}
@@ -81,9 +80,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
+import { allStudents, allWarnings, collegeStats } from '@/data/mockData'
 
 const router = useRouter()
 
@@ -91,25 +91,32 @@ const router = useRouter()
 const userRole = localStorage.getItem('userRole') || 'admin'
 const isStudent = computed(() => userRole === 'student')
 
+// 统计数据（从统一数据源计算）
 const stats = reactive({
-  totalStudents: 0,
-  activeStudents: 0,
-  warningCount: 0,
-  avgGpa: 0
+  totalStudents: allStudents.length,
+  activeStudents: allStudents.filter(s => s.studentStatus === 1).length,
+  warningCount: allWarnings.length,
+  avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
 })
 
-const warnings = ref([])
-const sampleProfiles = ref([])
+// 预警列表（从统一数据源获取）
+const warnings = ref(allWarnings.slice(0, 5))
+
+// 样本画像（使用核心学生的画像数据）
+const sampleProfiles = ref([
+  { studentNo: '2021001001', name: '张三', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
+  { studentNo: '2021001002', name: '李四', profileType: '实践应用型', gpa: 3.12, abilityLevel: 'B+', abilityType: 'warning', avatarColor: '#67c23a' },
+  { studentNo: '2021001003', name: '王五', profileType: '复合探索型', gpa: 3.42, abilityLevel: 'B+', abilityType: 'info', avatarColor: '#e6a23c' }
+])
 
 const collegeChartRef = ref(null)
-const collegeChartData = ref([])
-
 let collegeChart = null
 
 const initCharts = () => {
-  // 学院分布图
-  collegeChart = echarts.init(collegeChartRef.value)
-  updateCollegeChart()
+  if (collegeChartRef.value) {
+    collegeChart = echarts.init(collegeChartRef.value)
+    updateCollegeChart()
+  }
 }
 
 const updateCollegeChart = () => {
@@ -117,10 +124,7 @@ const updateCollegeChart = () => {
     collegeChart = echarts.init(collegeChartRef.value)
   }
 
-  const data = collegeChartData.value.map(item => ({
-    name: item.name || item.college,
-    value: item.value || item.count || 0
-  }))
+  const data = collegeStats
 
   collegeChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
@@ -145,36 +149,6 @@ const updateCollegeChart = () => {
   })
 }
 
-const loadData = () => {
-  // 使用模拟数据
-  stats.totalStudents = 40
-  stats.activeStudents = 38
-  stats.warningCount = 5
-  stats.avgGpa = 3.45
-
-  warnings.value = [
-    { studentNo: '2021001001', studentName: '张三', warningType: '成绩预警', level: 2, levelName: '一般', createTime: '2024-03-15' },
-    { studentNo: '2021001002', studentName: '李四', warningType: '学分预警', level: 1, levelName: '严重', createTime: '2024-03-12' },
-    { studentNo: '2021001003', studentName: '王五', warningType: '学业困难', level: 3, levelName: '特别严重', createTime: '2024-03-10' }
-  ]
-
-  sampleProfiles.value = [
-    { studentNo: '2021001001', name: '张三', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
-    { studentNo: '2021001002', name: '李四', profileType: '实践应用型', gpa: 3.42, abilityLevel: 'B', abilityType: 'warning', avatarColor: '#67c23a' },
-    { studentNo: '2021001003', name: '王五', profileType: '复合探索型', gpa: 3.15, abilityLevel: 'C', abilityType: 'info', avatarColor: '#e6a23c' }
-  ]
-
-  collegeChartData.value = [
-    { name: '计算机学院', value: 120 },
-    { name: '软件学院', value: 98 },
-    { name: '信息学院', value: 85 },
-    { name: '电子学院', value: 72 },
-    { name: '机械学院', value: 65 }
-  ]
-
-  updateCollegeChart()
-}
-
 const getWarningType = (level) => {
   const types = { 1: 'info', 2: 'warning', 3: 'danger' }
   return types[level] || 'info'
@@ -185,7 +159,6 @@ const goToProfile = (studentNo) => {
 }
 
 onMounted(() => {
-  loadData()
   initCharts()
   window.addEventListener('resize', () => {
     collegeChart?.resize()
@@ -208,18 +181,18 @@ onMounted(() => {
     text-align: center;
     padding: 24px 0;
     min-width: 0;
-    
+
     .el-icon {
       margin-bottom: 12px;
     }
-    
+
     .stats-value {
       font-size: 28px;
       font-weight: bold;
       color: #303133;
       margin: 12px 0;
     }
-    
+
     .stats-label {
       color: #909399;
       font-size: 14px;
@@ -247,24 +220,24 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  
+
   &:hover {
     background: #ecf5ff;
     transform: translateX(4px);
   }
-  
+
   .profile-info {
     flex: 1;
-    
+
     .profile-name {
       font-weight: bold;
       margin-bottom: 4px;
     }
-    
+
     .profile-meta {
       font-size: 12px;
       color: #909399;
-      
+
       .profile-type {
         margin-right: 12px;
       }

@@ -14,9 +14,9 @@
           </div>
           <div class="user-name">{{ userInfo.name }}</div>
           <div class="user-role">{{ userInfo.role }}</div>
-          
+
           <el-divider />
-          
+
           <div class="user-stats">
             <div class="stat-item">
               <div class="stat-value">{{ userInfo.studentCount }}</div>
@@ -40,16 +40,16 @@
           <template #header>
             <span>基本信息</span>
           </template>
-          
+
           <el-form :model="userInfo" label-width="100px" class="info-form">
             <el-form-item label="用户名">
               <el-input v-model="userInfo.name" placeholder="请输入用户名" />
             </el-form-item>
-            
+
             <el-form-item label="工号">
               <el-input v-model="userInfo.employeeNo" disabled />
             </el-form-item>
-            
+
             <el-form-item label="所属部门">
               <el-select v-model="userInfo.department" placeholder="请选择部门">
                 <el-option label="计算机学院" value="计算机学院" />
@@ -58,11 +58,11 @@
                 <el-option label="教务处" value="教务处" />
               </el-select>
             </el-form-item>
-            
+
             <el-form-item label="职位">
               <el-input v-model="userInfo.position" placeholder="请输入职位" />
             </el-form-item>
-            
+
             <el-form-item label="邮箱">
               <el-input v-model="userInfo.email" placeholder="请输入邮箱">
                 <template #append>
@@ -72,12 +72,12 @@
                 </template>
               </el-input>
             </el-form-item>
-            
+
             <el-form-item label="手机号">
               <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
             </el-form-item>
           </el-form>
-          
+
           <div class="form-actions">
             <el-button type="primary" @click="saveProfile">保存修改</el-button>
             <el-button @click="resetForm">重置</el-button>
@@ -89,7 +89,7 @@
           <template #header>
             <span>安全设置</span>
           </template>
-          
+
           <div class="security-item">
             <div class="security-info">
               <div class="security-title">
@@ -100,9 +100,9 @@
             </div>
             <el-button @click="showPasswordDialog = true">修改</el-button>
           </div>
-          
+
           <el-divider />
-          
+
           <div class="security-item">
             <div class="security-info">
               <div class="security-title">
@@ -115,9 +115,9 @@
               {{ emailVerified ? '已验证' : '未验证' }}
             </el-tag>
           </div>
-          
+
           <el-divider />
-          
+
           <div class="security-item">
             <div class="security-info">
               <div class="security-title">
@@ -154,8 +154,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { allStudents } from '@/data/mockData'
 
 const avatarBgColor = ref('#409eff')
 const emailVerified = ref(true)
@@ -170,15 +171,10 @@ const userInfo = reactive({
   position: '教学秘书',
   email: 'admin@university.edu.cn',
   phone: '13800138000',
-  studentCount: 40,
+  studentCount: allStudents.length,
   loginCount: 128,
-  avgGpa: 3.45
+  avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
 })
-
-// 模拟获取用户信息（使用本地数据）
-const fetchUserInfo = () => {
-  // userInfo 已是本地模拟数据，无需获取
-}
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -225,7 +221,7 @@ const sendVerifyEmail = () => {
 }
 
 const saveProfile = () => {
-  ElMessage.success('个人信息保存成功')
+  ElMessage.success('个人信息保存成功（模拟）')
 }
 
 const resetForm = () => {
@@ -235,9 +231,7 @@ const resetForm = () => {
 const changePassword = async () => {
   try {
     await passwordFormRef.value.validate()
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    ElMessage.success('密码修改成功')
+    ElMessage.success('密码修改成功（模拟）')
     showPasswordDialog.value = false
     passwordForm.oldPassword = ''
     passwordForm.newPassword = ''
@@ -246,6 +240,12 @@ const changePassword = async () => {
     console.error('表单验证失败:', error)
   }
 }
+
+onMounted(() => {
+  // 更新统计数据
+  userInfo.studentCount = allStudents.length
+  userInfo.avgGpa = parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
+})
 </script>
 
 <style scoped lang="scss">
@@ -259,44 +259,44 @@ const changePassword = async () => {
 
 .user-card {
   text-align: center;
-  
+
   .user-header {
     position: relative;
     display: inline-block;
-    
+
     .user-badge {
       position: absolute;
       bottom: 0;
       right: -10px;
     }
   }
-  
+
   .user-name {
     font-size: 24px;
     font-weight: bold;
     margin-top: 16px;
     color: #303133;
   }
-  
+
   .user-role {
     color: #909399;
     margin-top: 8px;
   }
-  
+
   .user-stats {
     display: flex;
     justify-content: space-around;
     margin-top: 20px;
-    
+
     .stat-item {
       text-align: center;
-      
+
       .stat-value {
         font-size: 20px;
         font-weight: bold;
         color: #409eff;
       }
-      
+
       .stat-label {
         font-size: 12px;
         color: #909399;
@@ -321,7 +321,7 @@ const changePassword = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  
+
   .security-info {
     .security-title {
       display: flex;
@@ -331,7 +331,7 @@ const changePassword = async () => {
       color: #303133;
       margin-bottom: 4px;
     }
-    
+
     .security-desc {
       font-size: 12px;
       color: #909399;

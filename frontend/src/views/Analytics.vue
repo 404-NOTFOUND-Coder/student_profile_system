@@ -66,6 +66,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { allStudents, allWarnings, collegeStats, majorStats } from '@/data/mockData'
 
 const activeTab = ref('student')
 
@@ -80,52 +81,39 @@ const knowledgeChartRef = ref(null)
 const warningTypeChartRef = ref(null)
 const warningTrendChartRef = ref(null)
 
+// 统计数据报表（从统一数据源计算）
 const tableData = ref([
-  { indicator: '学生总数', value: 100, rank: '-', change: 5.2, description: '学生总数' },
-  { indicator: '在读学生', value: 96, rank: '-', change: 2.8, description: '在读学生数' },
-  { indicator: '学业预警', value: 8, rank: '-', change: -12.5, description: '预警学生数' },
-  { indicator: '平均绩点', value: '3.42', rank: '-', change: 3.1, description: '平均绩点' }
+  { indicator: '学生总数', value: allStudents.length, rank: '-', change: 5.2, description: '学生总数' },
+  { indicator: '在读学生', value: allStudents.filter(s => s.studentStatus === 1).length, rank: '-', change: 2.8, description: '在读学生数' },
+  { indicator: '学业预警', value: allWarnings.length, rank: '-', change: -12.5, description: '预警学生数' },
+  { indicator: '平均绩点', value: (allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2), rank: '-', change: 3.1, description: '平均绩点' }
 ])
 
 let charts = {}
 
-// 模拟数据
+// 图表配置（使用统一数据源）
 const chartConfig = {
   college: {
     title: '各学院学生分布',
     type: 'bar',
-    data: [
-      { name: '计算机学院', value: 28 },
-      { name: '软件学院', value: 24 },
-      { name: '信息学院', value: 20 },
-      { name: '电子学院', value: 16 },
-      { name: '机械学院', value: 12 }
-    ],
+    data: collegeStats,
     color: '#409eff'
   },
   major: {
     title: '各专业学生分布',
     type: 'bar',
-    data: [
-      { name: '软件工程', value: 25 },
-      { name: '计算机科学与技术', value: 22 },
-      { name: '人工智能', value: 15 },
-      { name: '数据科学', value: 13 },
-      { name: '通信工程', value: 10 },
-      { name: '电子信息工程', value: 8 },
-      { name: '机械设计', value: 7 }
-    ],
+    data: majorStats.slice(0, 7),
     color: '#67c23a'
   },
   gpaDist: {
     title: 'GPA分数段分布',
     type: 'pie',
     data: [
-      { name: '3.5-4.0', value: 30, color: '#67c23a' },
-      { name: '3.0-3.5', value: 38, color: '#409eff' },
-      { name: '2.5-3.0', value: 22, color: '#e6a23c' },
-      { name: '2.0-2.5', value: 8, color: '#f56c6c' },
-      { name: '2.0以下', value: 2, color: '#909399' }
+      { name: '3.5-4.0', value: Math.round(allStudents.filter(s => s.gpa >= 3.5).length * 0.8), color: '#67c23a' },
+      { name: '3.0-3.5', value: Math.round(allStudents.filter(s => s.gpa >= 3.0 && s.gpa < 3.5).length * 0.8), color: '#409eff' },
+      { name: '2.5-3.0', value: Math.round(allStudents.filter(s => s.gpa >= 2.5 && s.gpa < 3.0).length * 0.8), color: '#e6a23c' },
+      { name: '2.0-2.5', value: Math.round(allStudents.filter(s => s.gpa >= 2.0 && s.gpa < 2.5).length * 0.8), color: '#f56c6c' },
+      { name: '2.0以下', value: Math.round(allStudents.filter(s => s.gpa < 2.0).length * 0.8), color: '#909399' }
     ]
   },
   scoreTrend: {
@@ -151,10 +139,10 @@ const chartConfig = {
     title: '学生画像类型',
     type: 'pie',
     data: [
-      { name: '学术研究型', value: 35, color: '#409eff' },
-      { name: '实践应用型', value: 28, color: '#67c23a' },
-      { name: '复合探索型', value: 22, color: '#e6a23c' },
-      { name: '创新创业型', value: 15, color: '#f56c6c' }
+      { name: '学术研究型', value: Math.round(allStudents.filter(s => s.profileType === '学术研究型').length * 1.5), color: '#409eff' },
+      { name: '实践应用型', value: Math.round(allStudents.filter(s => s.profileType === '实践应用型').length * 1.5), color: '#67c23a' },
+      { name: '复合探索型', value: Math.round(allStudents.filter(s => s.profileType === '复合探索型').length * 1.5), color: '#e6a23c' },
+      { name: '创新创业型', value: Math.round(allStudents.filter(s => s.profileType === '创新创业型').length * 1.5), color: '#f56c6c' }
     ]
   },
   ability: {
@@ -178,9 +166,9 @@ const chartConfig = {
     title: '预警类型分布',
     type: 'pie',
     data: [
-      { name: '成绩预警', value: 5, color: '#f56c6c' },
-      { name: '学分预警', value: 2, color: '#e6a23c' },
-      { name: '学业困难', value: 1, color: '#409eff' }
+      { name: '成绩预警', value: allWarnings.filter(w => w.warningType === '成绩预警').length, color: '#f56c6c' },
+      { name: '学分预警', value: allWarnings.filter(w => w.warningType === '学分预警').length, color: '#e6a23c' },
+      { name: '学业困难', value: allWarnings.filter(w => w.warningType === '学业困难').length, color: '#409eff' }
     ]
   },
   warningTrend: {
@@ -243,7 +231,7 @@ const initChart = (ref, config) => {
       radar: {
         center: ['50%', '50%'],
         radius: '55%',
-        indicator: config.indicator.map((name, i) => ({ name, max: 100 })),
+        indicator: config.indicator.map((name) => ({ name, max: 100 })),
         axisName: { fontSize: 10 }
       },
       series: [{
@@ -259,15 +247,12 @@ const initChart = (ref, config) => {
 
 const initAllCharts = () => {
   nextTick(() => {
-    // 学生统计
     if (!charts.college && collegeChartRef.value) {
       charts.college = initChart(collegeChartRef.value, chartConfig.college)
     }
     if (!charts.major && majorChartRef.value) {
       charts.major = initChart(majorChartRef.value, chartConfig.major)
     }
-
-    // 成绩分析
     if (!charts.gpaDist && gpaDistChartRef.value) {
       charts.gpaDist = initChart(gpaDistChartRef.value, chartConfig.gpaDist)
     }
@@ -277,8 +262,6 @@ const initAllCharts = () => {
     if (!charts.course && courseChartRef.value) {
       charts.course = initChart(courseChartRef.value, chartConfig.course)
     }
-
-    // 画像分析
     if (!charts.profileType && profileTypeChartRef.value) {
       charts.profileType = initChart(profileTypeChartRef.value, chartConfig.profileType)
     }
@@ -288,8 +271,6 @@ const initAllCharts = () => {
     if (!charts.knowledge && knowledgeChartRef.value) {
       charts.knowledge = initChart(knowledgeChartRef.value, chartConfig.knowledge)
     }
-
-    // 预警分析
     if (!charts.warningType && warningTypeChartRef.value) {
       charts.warningType = initChart(warningTypeChartRef.value, chartConfig.warningType)
     }

@@ -13,8 +13,8 @@
               <div class="basic-info">
                 <el-tag size="small">{{ profile.studentNo }}</el-tag>
                 <span class="info-item">
-                  <el-icon><Male v-if="profile.gender === '男'" /><Female v-else /></el-icon>
-                  {{ profile.gender }}
+                  <el-icon><Male v-if="profile.gender === 1" /><Female v-else /></el-icon>
+                  {{ profile.gender === 1 ? '男' : '女' }}
                 </span>
                 <span class="info-item">
                   <el-icon><School /></el-icon>
@@ -28,7 +28,7 @@
             </div>
             <div class="header-score">
               <div class="score-circle">
-                <el-progress type="circle" :percentage="profile.profileScore || 0" 
+                <el-progress type="circle" :percentage="profile.profileScore || 0"
                              :width="100" :color="scoreColor">
                   <template #default>
                     <span class="score-value">{{ profile.profileScore || 0 }}</span>
@@ -124,7 +124,7 @@
               </el-tabs>
             </div>
           </template>
-          
+
           <div v-show="academicTab === 'score'">
             <el-table :data="coursePerformance" stripe>
               <el-table-column prop="courseName" label="课程名称" />
@@ -236,7 +236,7 @@
             <span>👥 相似学生</span>
           </template>
           <div class="similar-list">
-            <div v-for="student in similarStudents" :key="student.studentNo" 
+            <div v-for="student in similarStudents" :key="student.studentNo"
                  class="similar-item" @click="goToProfile(student.studentNo)">
               <el-avatar :size="36">{{ student.name?.[0] }}</el-avatar>
               <div class="similar-info">
@@ -270,83 +270,13 @@
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
+import { allStudents, similarStudents as studentsSimilarData, allWarnings } from '@/data/mockData'
 
 const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
 const academicTab = ref('score')
-
-// 模拟学生画像数据
-const mockProfileData = {
-  '2021001001': {
-    name: '张三',
-    studentNo: '2021001001',
-    gender: '男',
-    college: '计算机学院',
-    major: '软件工程',
-    enrollmentYear: 2021,
-    profileScore: 88,
-    knowledgeEntropy: 8.5,
-    graphEditDistance: 2.3,
-    gpa: 3.85,
-    activityScore: 92,
-    profileType: '学术研究型',
-    abilityLevel: 'A',
-    personality: '勤奋好学,逻辑思维强,创新意识高',
-    academicTags: ['编程达人', '算法高手', '科研新星'],
-    practiceTags: ['竞赛选手', '项目骨干', '技术分享者'],
-    suggestionTags: ['加强实践经验', '提升团队协作', '关注前沿技术'],
-    academicTrend: { trend: 'RISING', description: '学业表现稳步提升' },
-    coursePerformance: [
-      { courseName: '数据结构与算法', semester: '2021-1', score: 95, knowledgeArea: '计算机基础', isChallenge: true },
-      { courseName: '计算机网络', semester: '2021-2', score: 88, knowledgeArea: '系统基础', isChallenge: false },
-      { courseName: '操作系统', semester: '2022-1', score: 92, knowledgeArea: '系统基础', isChallenge: true },
-      { courseName: '数据库原理', semester: '2022-2', score: 90, knowledgeArea: '数据管理', isChallenge: false },
-      { courseName: '人工智能导论', semester: '2023-1', score: 94, knowledgeArea: '人工智能', isChallenge: true }
-    ],
-    evidenceChain: [
-      { evidenceId: 1, evidenceType: '竞赛获奖', relevance: 0.95, content: 'ACM-ICPC亚洲区域赛银奖', source: '竞赛管理系统' },
-      { evidenceId: 2, evidenceType: '科研项目', relevance: 0.88, content: '参与导师AI科研项目', source: '科研管理系统' },
-      { evidenceId: 3, evidenceType: '论文发表', relevance: 0.82, content: '在投SCI论文第一作者', source: '学术管理系统' }
-    ],
-    timeline: [
-      { date: '2021-09', eventType: '学业', eventName: '入学教育', description: '参加新生入学教育活动' },
-      { date: '2022-06', eventType: '竞赛', eventName: '程序设计竞赛', description: '获得校级一等奖' },
-      { date: '2023-03', eventType: '科研', eventName: '加入实验室', description: '进入AI研究实验室' },
-      { date: '2023-10', eventType: '竞赛', eventName: 'ACM竞赛', description: '获得亚洲区域赛银奖' }
-    ],
-    warnings: []
-  },
-  '2021001002': {
-    name: '李四',
-    studentNo: '2021001002',
-    gender: '女',
-    college: '计算机学院',
-    major: '计算机科学与技术',
-    enrollmentYear: 2021,
-    profileScore: 75,
-    knowledgeEntropy: 7.2,
-    graphEditDistance: 3.5,
-    gpa: 3.12,
-    activityScore: 68,
-    profileType: '实践应用型',
-    abilityLevel: 'B+',
-    personality: '动手能力强,善于实践,团队协作好',
-    academicTags: ['实践达人', '项目经验丰富'],
-    practiceTags: ['学生干部', '志愿者标兵', '社团活跃分子'],
-    suggestionTags: ['加强理论学习', '提升学术研究能力'],
-    academicTrend: { trend: 'STABLE', description: '学业表现稳定' },
-    coursePerformance: [
-      { courseName: '离散数学', semester: '2021-1', score: 82, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: '面向对象编程', semester: '2021-2', score: 85, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: '计算机组成原理', semester: '2022-1', score: 78, knowledgeArea: '系统基础', isChallenge: true }
-    ],
-    evidenceChain: [],
-    timeline: [],
-    warnings: [{ id: 1, warningMessage: '平均绩点偏低', level: 1, suggestAction: '保持当前学习状态' }]
-  }
-}
 
 const profile = ref({})
 const evidenceChain = ref([])
@@ -387,22 +317,31 @@ const scoreColor = computed(() => {
   return '#f56c6c'
 })
 
-// 获取画像数据（模拟）
+// 获取画像数据（使用统一数据源）
 const fetchProfile = () => {
   const studentNo = route.params.studentNo || '2021001001'
   loading.value = true
 
-  // 使用模拟数据
-  const mockData = mockProfileData[studentNo] || mockProfileData['2021001001']
-  profile.value = { ...mockData }
-  coursePerformance.value = mockData.coursePerformance || []
-  evidenceChain.value = mockData.evidenceChain || []
-  timeline.value = mockData.timeline || []
-  warnings.value = mockData.warnings || []
-  similarStudents.value = [
-    { studentNo: '2021001003', name: '王五', profileType: '学术研究型', gpa: 3.78, similarity: 0.85 },
-    { studentNo: '2021001004', name: '赵六', profileType: '复合探索型', gpa: 3.65, similarity: 0.72 }
-  ]
+  // 从统一数据源获取学生数据
+  const studentData = allStudents.find(s => s.studentNo === studentNo)
+
+  if (studentData) {
+    profile.value = { ...studentData }
+    coursePerformance.value = studentData.coursePerformance || []
+    evidenceChain.value = studentData.evidenceChain || []
+    timeline.value = studentData.timeline || []
+    warnings.value = allWarnings.filter(w => w.studentNo === studentNo)
+    similarStudents.value = studentsSimilarData[studentNo] || []
+  } else {
+    // 默认使用第一个学生
+    const defaultStudent = allStudents[0]
+    profile.value = { ...defaultStudent }
+    coursePerformance.value = defaultStudent.coursePerformance || []
+    evidenceChain.value = defaultStudent.evidenceChain || []
+    timeline.value = defaultStudent.timeline || []
+    warnings.value = []
+    similarStudents.value = studentsSimilarData[defaultStudent.studentNo] || []
+  }
 
   nextTick(() => {
     initCharts()
@@ -413,6 +352,7 @@ const fetchProfile = () => {
 const initCharts = () => {
   // 雷达图
   if (radarChartRef.value) {
+    if (radarChart) radarChart.dispose()
     radarChart = echarts.init(radarChartRef.value)
     radarChart.setOption({
       radar: {
@@ -441,35 +381,49 @@ const initCharts = () => {
 
   // 知识掌握柱状图
   if (knowledgeChartRef.value) {
+    if (knowledgeChart) knowledgeChart.dispose()
     knowledgeChart = echarts.init(knowledgeChartRef.value)
+    const knowledgeData = coursePerformance.value.length > 0
+      ? coursePerformance.value.map(c => ({ name: c.knowledgeArea, value: c.score }))
+      : [
+          { name: '计算机基础', value: 92 },
+          { name: '系统基础', value: 78 },
+          { name: '数据管理', value: 90 },
+          { name: '人工智能', value: 85 }
+        ]
     knowledgeChart.setOption({
       tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: ['计算机基础', '系统基础', '网络基础', '数据管理', '人工智能'] },
+      xAxis: { type: 'category', data: knowledgeData.map(d => d.name), axisLabel: { rotate: 30 } },
       yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
       series: [{
         type: 'bar',
-        data: [
-          { value: 92, itemStyle: { color: '#409eff' } },
-          { value: 78, itemStyle: { color: '#67c23a' } },
-          { value: 65, itemStyle: { color: '#e6a23c' } },
-          { value: 90, itemStyle: { color: '#f56c6c' } },
-          { value: 85, itemStyle: { color: '#909399' } }
-        ]
+        data: knowledgeData.map((d, i) => ({
+          value: d.value,
+          itemStyle: { color: ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399'][i % 5] }
+        }))
       }]
     })
   }
 
   // 学业趋势折线图
   if (trendChartRef.value) {
+    if (trendChart) trendChart.dispose()
     trendChart = echarts.init(trendChartRef.value)
+    const trendData = coursePerformance.value.length > 0
+      ? coursePerformance.value.map(c => ({ semester: c.semester, score: c.score }))
+      : [
+          { semester: '2021-1', score: 85 },
+          { semester: '2022-1', score: 88 },
+          { semester: '2023-1', score: 90 }
+        ]
     trendChart.setOption({
       tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: ['2022-1', '2022-2', '2023-1', '2023-2', '2024-1'] },
+      xAxis: { type: 'category', data: trendData.map(d => d.semester) },
       yAxis: { type: 'value', min: 60, max: 100 },
       series: [{
         type: 'line',
         smooth: true,
-        data: [88, 85, 82, 88, 91],
+        data: trendData.map(d => d.score),
         areaStyle: { color: 'rgba(64, 158, 255, 0.2)' },
         lineStyle: { color: '#409eff' },
         itemStyle: { color: '#409eff' }
@@ -482,7 +436,7 @@ const initCharts = () => {
 const getScoreClass = (score) => score >= 90 ? 'score-high' : score >= 80 ? 'score-medium' : 'score-low'
 const getTrendType = (trend) => ({ RISING: 'success', STABLE: 'warning', DECLINING: 'danger' }[trend] || 'info')
 const getTrendName = (trend) => ({ RISING: '上升', STABLE: '稳定', DECLINING: '下降' }[trend] || '未知')
-const getEventType = (type) => ({ '学业': 'success', '竞赛': 'warning', '实践': 'primary' }[type] || 'info')
+const getEventType = (type) => ({ '学业': 'success', '竞赛': 'warning', '实践': 'primary', '科研': 'info' }[type] || 'info')
 const getWarningAlertType = (level) => ({ 1: 'info', 2: 'warning', 3: 'error' }[level] || 'info')
 const goToProfile = (studentNo) => router.push(`/student/profile/${studentNo}`)
 
@@ -518,22 +472,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 24px;
-  
+
   .header-info {
     flex: 1;
-    
+
     .student-name {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 8px;
     }
-    
+
     .basic-info {
       display: flex;
       align-items: center;
       gap: 16px;
       color: #606266;
-      
+
       .info-item {
         display: flex;
         align-items: center;
@@ -541,7 +495,7 @@ onMounted(() => {
       }
     }
   }
-  
+
   .header-score {
     .score-value {
       font-size: 24px;
@@ -557,7 +511,7 @@ onMounted(() => {
 
 .metric-card {
   text-align: center;
-  
+
   .metric-header {
     display: flex;
     align-items: center;
@@ -566,14 +520,14 @@ onMounted(() => {
     margin-bottom: 12px;
     color: #606266;
   }
-  
+
   .metric-value {
     font-size: 32px;
     font-weight: bold;
     color: #303133;
     margin: 8px 0;
   }
-  
+
   .metric-desc {
     font-size: 12px;
     color: #909399;
@@ -588,7 +542,7 @@ onMounted(() => {
 
 .profile-type-section {
   margin-bottom: 20px;
-  
+
   .profile-type-tag {
     display: inline-block;
     padding: 8px 24px;
@@ -596,24 +550,24 @@ onMounted(() => {
     font-weight: bold;
     font-size: 16px;
     margin-bottom: 16px;
-    
+
     &.学术研究型 { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
     &.实践应用型 { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #fff; }
     &.复合探索型 { background: linear-gradient(135deg, #fa709a, #fee140); color: #fff; }
   }
-  
+
   .profile-ability {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
   }
-  
+
   .personality-tags {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    
+
     .label {
       font-weight: bold;
       margin-right: 8px;
@@ -644,7 +598,7 @@ onMounted(() => {
   padding: 12px;
   background: #f5f7fa;
   border-radius: 8px;
-  
+
   .trend-label {
     font-weight: bold;
   }
@@ -653,7 +607,7 @@ onMounted(() => {
 .timeline {
   position: relative;
   padding-left: 20px;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -663,11 +617,11 @@ onMounted(() => {
     width: 2px;
     background: #dcdfe6;
   }
-  
+
   .timeline-item {
     position: relative;
     margin-bottom: 20px;
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -679,23 +633,23 @@ onMounted(() => {
       border-radius: 50%;
       border: 2px solid #fff;
     }
-    
+
     .timeline-date {
       font-size: 12px;
       color: #909399;
       margin-bottom: 4px;
     }
-    
+
     .timeline-content {
       background: #f5f7fa;
       padding: 12px;
       border-radius: 8px;
-      
+
       .event-name {
         font-weight: bold;
         margin: 8px 0 4px;
       }
-      
+
       .event-desc {
         font-size: 12px;
         color: #606266;
@@ -707,14 +661,14 @@ onMounted(() => {
 .tag-section {
   .tag-category {
     margin-bottom: 16px;
-    
+
     .category-title {
       font-weight: bold;
       display: block;
       margin-bottom: 8px;
       color: #303133;
     }
-    
+
     .tags {
       display: flex;
       flex-wrap: wrap;
@@ -733,25 +687,25 @@ onMounted(() => {
   .evidence-item {
     padding: 12px;
     border-bottom: 1px solid #ebeef5;
-    
+
     &:last-child { border-bottom: none; }
-    
+
     .evidence-header {
       display: flex;
       justify-content: space-between;
       margin-bottom: 8px;
-      
+
       .relevance {
         color: #67c23a;
         font-weight: bold;
       }
     }
-    
+
     .evidence-content {
       color: #303133;
       margin-bottom: 4px;
     }
-    
+
     .evidence-source {
       font-size: 12px;
       color: #909399;
@@ -770,25 +724,25 @@ onMounted(() => {
     margin-bottom: 12px;
     cursor: pointer;
     transition: all 0.3s;
-    
+
     &:hover {
       background: #ecf5ff;
       transform: translateX(4px);
     }
-    
+
     .similar-info {
       flex: 1;
-      
+
       .similar-name {
         font-weight: bold;
       }
-      
+
       .similar-meta {
         font-size: 12px;
         color: #909399;
       }
     }
-    
+
     .similarity {
       color: #409eff;
       font-weight: bold;

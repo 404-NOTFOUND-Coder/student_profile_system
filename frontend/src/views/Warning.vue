@@ -11,9 +11,10 @@
       <el-form :inline="true" :model="queryForm" class="search-form">
         <el-form-item label="预警类型">
           <el-select v-model="queryForm.warningType" placeholder="请选择预警类型" clearable class="select-wide">
-            <el-option label="成绩预警" value="1" />
-            <el-option label="学分预警" value="2" />
-            <el-option label="学业困难" value="3" />
+            <el-option label="成绩预警" value="成绩预警" />
+            <el-option label="学分预警" value="学分预警" />
+            <el-option label="学业困难" value="学业困难" />
+            <el-option label="毕业预警" value="毕业预警" />
           </el-select>
         </el-form-item>
         <el-form-item label="预警等级">
@@ -44,7 +45,7 @@
         <el-table-column prop="warningType" label="预警类型" width="100">
           <template #default="{ row }">
             <el-tag :type="getWarningTypeTag(row.warningType)">
-              {{ row.warningType || '成绩预警' }}
+              {{ row.warningType }}
             </el-tag>
           </template>
         </el-table-column>
@@ -56,11 +57,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="warningMessage" label="预警信息" min-width="200" />
-        <el-table-column prop="createTime" label="创建时间" width="120">
-          <template #default="{ row }">
-            {{ formatDate(row.createTime) }}
-          </template>
-        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="120" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="viewDetail(row)">
@@ -94,9 +91,11 @@
       <el-descriptions :column="2" border v-if="currentWarning">
         <el-descriptions-item label="学号">{{ currentWarning.studentNo }}</el-descriptions-item>
         <el-descriptions-item label="姓名">{{ currentWarning.studentName }}</el-descriptions-item>
+        <el-descriptions-item label="学院">{{ currentWarning.college }}</el-descriptions-item>
+        <el-descriptions-item label="专业">{{ currentWarning.major }}</el-descriptions-item>
         <el-descriptions-item label="预警类型">
           <el-tag :type="getWarningTypeTag(currentWarning.warningType)">
-            {{ currentWarning.warningType || '成绩预警' }}
+            {{ currentWarning.warningType }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="预警等级">
@@ -107,9 +106,6 @@
         <el-descriptions-item label="预警信息" :span="2">
           {{ currentWarning.warningMessage }}
         </el-descriptions-item>
-        <el-descriptions-item label="触发条件" :span="2">
-          {{ currentWarning.warningMessage || '学业评分偏低' }}
-        </el-descriptions-item>
         <el-descriptions-item label="建议措施" :span="2">
           {{ getSuggestAction(currentWarning.level) }}
         </el-descriptions-item>
@@ -117,10 +113,10 @@
           <el-tag type="warning">待处理</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
-          {{ formatDate(currentWarning.createTime) }}
+          {{ currentWarning.createTime }}
         </el-descriptions-item>
       </el-descriptions>
-      
+
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
         <el-button type="primary" @click="handleWarning(currentWarning)">
@@ -156,6 +152,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { allWarnings } from '@/data/mockData'
 
 const router = useRouter()
 
@@ -181,22 +178,14 @@ const handleForm = reactive({
   remark: ''
 })
 
-// 模拟预警数据
-const mockWarnings = [
-  { id: 1, studentNo: '2021001001', studentName: '张三', college: '计算机学院', major: '软件工程', warningType: '成绩预警', level: 1, levelName: '一般', warningMessage: '数据结构与算法成绩偏低', createTime: '2024-03-15' },
-  { id: 2, studentNo: '2021001002', studentName: '李四', college: '计算机学院', major: '计算机科学与技术', warningType: '学分预警', level: 2, levelName: '较重', warningMessage: '已获学分不足毕业要求', createTime: '2024-03-12' },
-  { id: 3, studentNo: '2021001003', studentName: '王五', college: '软件学院', major: '软件工程', warningType: '学业困难', level: 3, levelName: '严重', warningMessage: '多门课程不及格', createTime: '2024-03-10' },
-  { id: 4, studentNo: '2021001004', studentName: '赵六', college: '信息学院', major: '通信工程', warningType: '成绩预警', level: 1, levelName: '一般', warningMessage: '高等数学成绩偏低', createTime: '2024-03-08' },
-  { id: 5, studentNo: '2021001005', studentName: '钱七', college: '电子学院', major: '电子科学与技术', warningType: '学分预警', level: 2, levelName: '较重', warningMessage: '必修课学分不足', createTime: '2024-03-05' },
-  { id: 6, studentNo: '2021001006', studentName: '孙八', college: '机械学院', major: '机械设计制造', warningType: '毕业预警', level: 3, levelName: '严重', warningMessage: '毕业设计进度滞后', createTime: '2024-03-01' }
-]
-
-// 加载预警数据（模拟）
+// 加载预警数据（从统一数据源）
 const loadData = () => {
   loading.value = true
 
+  // 使用统一数据源
+  let filtered = [...allWarnings]
+
   // 模拟过滤
-  let filtered = [...mockWarnings]
   if (queryForm.warningType) {
     filtered = filtered.filter(w => w.warningType === queryForm.warningType)
   }
@@ -251,7 +240,6 @@ const getWarningType = (type) => {
 }
 
 const getWarningTypeTag = (type) => {
-  // type 是字符串如 "成绩预警"
   if (type === '成绩预警') return 'danger'
   if (type === '学分预警') return 'warning'
   if (type === '学业困难') return 'info'
@@ -270,12 +258,6 @@ const getSuggestAction = (level) => {
     3: '需要重点关注，建议约谈家长和导师'
   }
   return actions[level] || '建议加强学业辅导'
-}
-
-const formatDate = (date) => {
-  if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
 onMounted(() => {
