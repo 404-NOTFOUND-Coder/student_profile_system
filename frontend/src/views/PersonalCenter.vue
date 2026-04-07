@@ -5,7 +5,7 @@
       <div class="user-profile">
         <div class="user-avatar-section">
           <el-avatar :size="100" :style="{ background: avatarBgColor }">
-            {{ userInfo.studentNo || userInfo.employeeNo || '管' }}
+            {{ getAvatarText() }}
           </el-avatar>
           <div class="user-badge">
             <el-tag type="success" size="small">已认证</el-tag>
@@ -13,19 +13,40 @@
         </div>
         <div class="user-basic-info">
           <div class="user-name-row">
-            <span class="user-name">{{ userInfo.studentNo || userInfo.employeeNo }}</span>
-            <el-tag type="warning" size="small">{{ userInfo.role }}</el-tag>
+            <span class="user-name">{{ getDisplayName() }}</span>
+            <el-tag type="warning" size="small">{{ userInfo.roleName }}</el-tag>
           </div>
           <div class="user-meta">
-            <span><el-icon><User /></el-icon> 工号：{{ userInfo.employeeNo }}</span>
-            <span><el-icon><OfficeBuilding /></el-icon> {{ userInfo.department }}</span>
-            <span><el-icon><Calendar /></el-icon> 入职时间：2020-09-01</span>
+            <!-- 系统管理员 -->
+            <template v-if="isAdmin">
+              <span><el-icon><User /></el-icon> 管理员编号：{{ userInfo.employeeNo }}</span>
+              <span><el-icon><OfficeBuilding /></el-icon> {{ userInfo.department }}</span>
+              <span><el-icon><Calendar /></el-icon> 任职时间：{{ userInfo.joinDate }}</span>
+            </template>
+            <!-- 教务处老师 -->
+            <template v-else-if="isJiaowu">
+              <span><el-icon><User /></el-icon> 教职工号：{{ userInfo.employeeNo }}</span>
+              <span><el-icon><OfficeBuilding /></el-icon> {{ userInfo.department }}</span>
+              <span><el-icon><Calendar /></el-icon> 入职时间：{{ userInfo.joinDate }}</span>
+            </template>
+            <!-- 辅导员 -->
+            <template v-else-if="isFudaoyuan">
+              <span><el-icon><User /></el-icon> 辅导员编号：{{ userInfo.employeeNo }}</span>
+              <span><el-icon><OfficeBuilding /></el-icon> 负责学院：{{ userInfo.managedCollege }}</span>
+              <span><el-icon><Calendar /></el-icon> 任职时间：{{ userInfo.joinDate }}</span>
+            </template>
+            <!-- 学生 -->
+            <template v-else>
+              <span><el-icon><User /></el-icon> 学号：{{ userInfo.studentNo }}</span>
+              <span><el-icon><OfficeBuilding /></el-icon> {{ userInfo.college }}</span>
+              <span><el-icon><Calendar /></el-icon> 入学时间：{{ userInfo.enrollmentYear }}-09</span>
+            </template>
           </div>
         </div>
         <div class="user-stats">
-          <div class="stat-item">
-            <div class="stat-value">{{ userInfo.studentCount }}</div>
-            <div class="stat-label">管理学生</div>
+          <div class="stat-item" v-if="!isStudent">
+            <div class="stat-value">{{ userInfo.managedCount }}</div>
+            <div class="stat-label">{{ isAdmin ? '管理用户' : isJiaowu ? '管理班级' : '管理学生' }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-value">{{ userInfo.loginCount }}</div>
@@ -35,114 +56,210 @@
             <div class="stat-value">{{ userInfo.avgGpa }}</div>
             <div class="stat-label">平均绩点</div>
           </div>
+          <div class="stat-item" v-if="isFudaoyuan">
+            <div class="stat-value">{{ userInfo.warningCount }}</div>
+            <div class="stat-label">预警学生</div>
+          </div>
         </div>
       </div>
     </el-card>
 
-    <!-- 基本信息 -->
-    <el-card class="mb-20">
+    <!-- 基本信息 - 系统管理员 -->
+    <el-card class="mb-20" v-if="isAdmin">
       <template #header>
         <span>基本信息</span>
       </template>
-
-      <el-form :model="userInfo" label-width="100px" class="info-form">
-        <el-form-item label="学号/工号">
-          <el-input v-model="userInfo.studentNo" placeholder="请输入学号" />
-        </el-form-item>
-
-        <el-form-item label="工号">
+      <el-form :model="userInfo" label-width="120px" class="info-form">
+        <el-form-item label="管理员编号">
           <el-input v-model="userInfo.employeeNo" disabled />
-            </el-form-item>
+        </el-form-item>
+        <el-form-item label="管理员姓名">
+          <el-input v-model="userInfo.name" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="所属部门">
+          <el-input v-model="userInfo.department" disabled />
+        </el-form-item>
+        <el-form-item label="管理员级别">
+          <el-input v-model="userInfo.adminLevel" disabled />
+        </el-form-item>
+        <el-form-item label="任职时间">
+          <el-input v-model="userInfo.joinDate" disabled />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userInfo.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
+        </el-form-item>
+      </el-form>
+      <div class="form-actions">
+        <el-button type="primary" @click="saveProfile">保存修改</el-button>
+        <el-button @click="resetForm">重置</el-button>
+      </div>
+    </el-card>
 
-            <el-form-item label="所属部门">
-              <el-select v-model="userInfo.department" placeholder="请选择部门">
-                <el-option label="计算机科学与工程学院（网络空间安全学院）" value="计算机科学与工程学院（网络空间安全学院）" />
-                <el-option label="信息与软件工程学院（示范性软件学院）" value="信息与软件工程学院（示范性软件学院）" />
-                <el-option label="电子科学与工程学院" value="电子科学与工程学院" />
-                <el-option label="机械与电气工程学院" value="机械与电气工程学院" />
-                <el-option label="自动化工程学院" value="自动化工程学院" />
-                <el-option label="经济与管理学院" value="经济与管理学院" />
-                <el-option label="格拉斯哥学院" value="格拉斯哥学院" />
-                <el-option label="光电科学与工程学院" value="光电科学与工程学院" />
-                <el-option label="公共管理学院" value="公共管理学院" />
-                <el-option label="外国语学院" value="外国语学院" />
-                <el-option label="数学科学学院" value="数学科学学院" />
-                <el-option label="物理学院" value="物理学院" />
-                <el-option label="材料与能源学院" value="材料与能源学院" />
-                <el-option label="教务处" value="教务处" />
-              </el-select>
-            </el-form-item>
+    <!-- 基本信息 - 教务处老师 -->
+    <el-card class="mb-20" v-else-if="isJiaowu">
+      <template #header>
+        <span>基本信息</span>
+      </template>
+      <el-form :model="userInfo" label-width="120px" class="info-form">
+        <el-form-item label="教职工号">
+          <el-input v-model="userInfo.employeeNo" disabled />
+        </el-form-item>
+        <el-form-item label="教师姓名">
+          <el-input v-model="userInfo.name" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="所属部门">
+          <el-input v-model="userInfo.department" />
+        </el-form-item>
+        <el-form-item label="职位职称">
+          <el-input v-model="userInfo.title" placeholder="请输入职位职称" />
+        </el-form-item>
+        <el-form-item label="任教科目">
+          <el-input v-model="userInfo.subject" placeholder="请输入任教科目" />
+        </el-form-item>
+        <el-form-item label="入职时间">
+          <el-input v-model="userInfo.joinDate" disabled />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userInfo.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
+        </el-form-item>
+      </el-form>
+      <div class="form-actions">
+        <el-button type="primary" @click="saveProfile">保存修改</el-button>
+        <el-button @click="resetForm">重置</el-button>
+      </div>
+    </el-card>
 
-            <el-form-item label="职位">
-              <el-input v-model="userInfo.position" placeholder="请输入职位" />
-            </el-form-item>
+    <!-- 基本信息 - 辅导员 -->
+    <el-card class="mb-20" v-else-if="isFudaoyuan">
+      <template #header>
+        <span>基本信息</span>
+      </template>
+      <el-form :model="userInfo" label-width="120px" class="info-form">
+        <el-form-item label="辅导员编号">
+          <el-input v-model="userInfo.employeeNo" disabled />
+        </el-form-item>
+        <el-form-item label="辅导员姓名">
+          <el-input v-model="userInfo.name" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="负责学院">
+          <el-input v-model="userInfo.managedCollege" />
+        </el-form-item>
+        <el-form-item label="所带班级">
+          <el-input v-model="userInfo.managedClasses" disabled />
+        </el-form-item>
+        <el-form-item label="职位">
+          <el-input v-model="userInfo.position" placeholder="请输入职位" />
+        </el-form-item>
+        <el-form-item label="任职时间">
+          <el-input v-model="userInfo.joinDate" disabled />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userInfo.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
+        </el-form-item>
+      </el-form>
+      <div class="form-actions">
+        <el-button type="primary" @click="saveProfile">保存修改</el-button>
+        <el-button @click="resetForm">重置</el-button>
+      </div>
+    </el-card>
 
-            <el-form-item label="邮箱">
-              <el-input v-model="userInfo.email" placeholder="请输入邮箱">
-                <template #append>
-                  <el-button @click="sendVerifyEmail" :disabled="emailVerified">
-                    {{ emailVerified ? '已验证' : '验证' }}
-                  </el-button>
-                </template>
-              </el-input>
-            </el-form-item>
+    <!-- 基本信息 - 学生 -->
+    <el-card class="mb-20" v-else>
+      <template #header>
+        <span>基本信息</span>
+      </template>
+      <el-form :model="userInfo" label-width="120px" class="info-form">
+        <el-form-item label="学号">
+          <el-input v-model="userInfo.studentNo" disabled />
+        </el-form-item>
+        <el-form-item label="姓名">
+          <el-input v-model="userInfo.name" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-input v-model="userInfo.gender" disabled />
+        </el-form-item>
+        <el-form-item label="学院">
+          <el-input v-model="userInfo.college" disabled />
+        </el-form-item>
+        <el-form-item label="专业">
+          <el-input v-model="userInfo.major" disabled />
+        </el-form-item>
+        <el-form-item label="班级">
+          <el-input v-model="userInfo.className" disabled />
+        </el-form-item>
+        <el-form-item label="入学年份">
+          <el-input v-model="userInfo.enrollmentYear" disabled />
+        </el-form-item>
+        <el-form-item label="学籍状态">
+          <el-input v-model="userInfo.studentStatus" disabled />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="userInfo.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
+        </el-form-item>
+      </el-form>
+      <div class="form-actions">
+        <el-button type="primary" @click="saveProfile">保存修改</el-button>
+        <el-button @click="resetForm">重置</el-button>
+      </div>
+    </el-card>
 
-            <el-form-item label="手机号">
-              <el-input v-model="userInfo.phone" placeholder="请输入手机号" />
-            </el-form-item>
-          </el-form>
+    <!-- 安全设置 -->
+    <el-card class="mt-20">
+      <template #header>
+        <span>安全设置</span>
+      </template>
 
-          <div class="form-actions">
-            <el-button type="primary" @click="saveProfile">保存修改</el-button>
-            <el-button @click="resetForm">重置</el-button>
+      <div class="security-item">
+        <div class="security-info">
+          <div class="security-title">
+            <el-icon><Lock /></el-icon>
+            <span>登录密码</span>
           </div>
-        </el-card>
+          <div class="security-desc">定期修改密码可以提高账号安全性</div>
+        </div>
+        <el-button @click="showPasswordDialog = true">修改</el-button>
+      </div>
 
-        <!-- 安全设置 -->
-        <el-card class="mt-20">
-          <template #header>
-            <span>安全设置</span>
-          </template>
+      <el-divider />
 
-          <div class="security-item">
-            <div class="security-info">
-              <div class="security-title">
-                <el-icon><Lock /></el-icon>
-                <span>登录密码</span>
-              </div>
-              <div class="security-desc">定期修改密码可以提高账号安全性</div>
-            </div>
-            <el-button @click="showPasswordDialog = true">修改</el-button>
+      <div class="security-item">
+        <div class="security-info">
+          <div class="security-title">
+            <el-icon><Message /></el-icon>
+            <span>邮箱绑定</span>
           </div>
+          <div class="security-desc">已绑定邮箱：{{ maskEmail(userInfo.email) }}</div>
+        </div>
+        <el-tag :type="emailVerified ? 'success' : 'warning'" size="small">
+          {{ emailVerified ? '已验证' : '未验证' }}
+        </el-tag>
+      </div>
 
-          <el-divider />
+      <el-divider />
 
-          <div class="security-item">
-            <div class="security-info">
-              <div class="security-title">
-                <el-icon><Message /></el-icon>
-                <span>邮箱绑定</span>
-              </div>
-              <div class="security-desc">已绑定邮箱：{{ maskEmail(userInfo.email) }}</div>
-            </div>
-            <el-tag :type="emailVerified ? 'success' : 'warning'" size="small">
-              {{ emailVerified ? '已验证' : '未验证' }}
-            </el-tag>
+      <div class="security-item">
+        <div class="security-info">
+          <div class="security-title">
+            <el-icon><Phone /></el-icon>
+            <span>手机绑定</span>
           </div>
-
-          <el-divider />
-
-          <div class="security-item">
-            <div class="security-info">
-              <div class="security-title">
-                <el-icon><Phone /></el-icon>
-                <span>手机绑定</span>
-              </div>
-              <div class="security-desc">已绑定手机：{{ maskPhone(userInfo.phone) }}</div>
-            </div>
-            <el-tag type="success" size="small">已绑定</el-tag>
-          </div>
-        </el-card>
+          <div class="security-desc">已绑定手机：{{ maskPhone(userInfo.phone) }}</div>
+        </div>
+        <el-tag type="success" size="small">已绑定</el-tag>
+      </div>
+    </el-card>
 
     <!-- 修改密码对话框 -->
     <el-dialog v-model="showPasswordDialog" title="修改密码" width="500px">
@@ -172,6 +289,9 @@ import { allStudents, userAccounts } from '@/data/mockData'
 
 // 获取用户角色
 const userRole = computed(() => localStorage.getItem('userRole') || 'admin')
+const isAdmin = computed(() => userRole.value === 'admin')
+const isJiaowu = computed(() => userRole.value === 'jiaowu')
+const isFudaoyuan = computed(() => userRole.value === 'fudaoyuan')
 const isStudent = computed(() => userRole.value === 'student')
 
 const avatarBgColor = ref('#409eff')
@@ -179,21 +299,96 @@ const emailVerified = ref(true)
 const showPasswordDialog = ref(false)
 const passwordFormRef = ref(null)
 
-// 从localStorage获取用户信息
-const storedUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+// 根据角色获取用户信息
+const getUserInfoByRole = () => {
+  const baseInfo = {
+    loginCount: 128,
+    email: '',
+    phone: ''
+  }
 
-const userInfo = reactive({
-  studentNo: storedUserInfo.studentNo || storedUserInfo.employeeNo || '20240001',
-  employeeNo: storedUserInfo.employeeNo || '20240001',
-  role: storedUserInfo.roleName || '系统管理员',
-  department: storedUserInfo.department || '计算机科学与工程学院（网络空间安全学院）',
-  position: storedUserInfo.position || '教学秘书',
-  email: storedUserInfo.email || 'admin@university.edu.cn',
-  phone: storedUserInfo.phone || '13800138000',
-  studentCount: allStudents.length,
-  loginCount: 128,
-  avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
-})
+  if (isAdmin.value) {
+    return {
+      ...baseInfo,
+      employeeNo: 'A00001',
+      name: '系统管理员',
+      roleName: '系统管理员',
+      role: 'admin',
+      department: '信息中心',
+      adminLevel: '超级管理员',
+      joinDate: '2019-09-01',
+      managedCount: 50,
+      email: 'admin@university.edu.cn',
+      phone: '13800138000'
+    }
+  } else if (isJiaowu.value) {
+    return {
+      ...baseInfo,
+      employeeNo: 'J2020001',
+      name: '张教务',
+      roleName: '教务处老师',
+      role: 'jiaowu',
+      department: '教务处',
+      title: '教务主任',
+      subject: '教学管理',
+      joinDate: '2020-09-01',
+      managedCount: 45,
+      email: 'jiaowu@university.edu.cn',
+      phone: '13800138001'
+    }
+  } else if (isFudaoyuan.value) {
+    return {
+      ...baseInfo,
+      employeeNo: 'F2020001',
+      name: '李辅导员',
+      roleName: '辅导员',
+      role: 'fudaoyuan',
+      managedCollege: '计算机科学与工程学院',
+      managedClasses: '软工1班、软工2班、计科1班、计科2班',
+      position: '年级辅导员',
+      joinDate: '2020-09-01',
+      managedCount: allStudents.filter(s => s.college === '计算机科学与工程学院（网络空间安全学院）').length,
+      warningCount: allStudents.filter(s => s.college === '计算机科学与工程学院（网络空间安全学院）' && s.studentStatus === 3).length,
+      email: 'fudaoyuan@university.edu.cn',
+      phone: '13800138002'
+    }
+  } else {
+    // 学生角色 - 使用第一个学生数据作为示例
+    const student = allStudents[0] || {}
+    return {
+      ...baseInfo,
+      studentNo: student.studentNo || '2020010906005',
+      name: student.name || '张伟',
+      roleName: '学生',
+      role: 'student',
+      gender: student.gender === 1 ? '男' : '女',
+      college: student.college || '计算机科学与工程学院',
+      major: student.major || '计算机科学与技术',
+      className: student.className || '1班',
+      enrollmentYear: student.enrollmentYear || 2020,
+      studentStatus: student.studentStatus === 1 ? '在读' : '其他',
+      avgGpa: student.gpa || 3.5,
+      email: student.email || 'student@university.edu.cn',
+      phone: student.phone || '13800138003'
+    }
+  }
+}
+
+const userInfo = reactive(getUserInfoByRole())
+
+const getAvatarText = () => {
+  if (isStudent.value) {
+    return userInfo.studentNo?.substring(10, 13) || '学'
+  }
+  return userInfo.name?.charAt(0) || '管'
+}
+
+const getDisplayName = () => {
+  if (isStudent.value) {
+    return `${userInfo.name} (${userInfo.studentNo})`
+  }
+  return userInfo.name
+}
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -226,6 +421,7 @@ const passwordRules = {
 const maskEmail = (email) => {
   if (!email) return ''
   const [username, domain] = email.split('@')
+  if (!username || !domain) return email
   const maskedUsername = username.charAt(0) + '***' + username.charAt(username.length - 1)
   return maskedUsername + '@' + domain
 }
@@ -262,8 +458,10 @@ const changePassword = async () => {
 
 onMounted(() => {
   // 更新统计数据
-  userInfo.studentCount = allStudents.length
-  userInfo.avgGpa = parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
+  if (isFudaoyuan.value) {
+    userInfo.managedCount = allStudents.filter(s => s.college === '计算机科学与工程学院（网络空间安全学院）').length
+    userInfo.warningCount = allStudents.filter(s => s.college === '计算机科学与工程学院（网络空间安全学院）' && s.studentStatus === 3).length
+  }
 })
 </script>
 
