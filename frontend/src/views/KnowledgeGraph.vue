@@ -136,7 +136,7 @@ const activeTab = ref('graph')
 const selectedStudent = ref('')
 
 // 学生列表（从统一数据源获取）
-const students = ref(allStudents.slice(0, 10)) // 只取前10个有完整数据的
+const students = ref(allStudents)
 
 // 模拟关系配置
 const relationsConfig = ref({
@@ -202,15 +202,26 @@ const quadsData = ref([])
 const loadKnowledgeGraph = (studentNo) => {
   if (!studentNo) return
 
+  // 首先从 allStudents 中查找学生信息
+  const student = allStudents.find(s => s.studentNo === studentNo)
   const data = knowledgeGraphData[studentNo]
-  if (!data) {
-    // 如果没有预定义数据，生成空图谱
-    const student = students.value.find(s => s.studentNo === studentNo)
-    quadsData.value = student ? [
+
+  if (!data && !student) {
+    // 如果既没有预定义数据也没有学生信息，生成空图谱
+    quadsData.value = []
+    activityStats.total = 0
+    activityStats.byRelation = {}
+    activityStats.byLevel = {}
+    activityStats.byYear = {}
+  } else if (!data && student) {
+    // 如果没有预定义数据但有学生信息，生成基础图谱
+    quadsData.value = [
       { head: student.studentNo, relation: '隶属院系', tail: student.college, time: '-', type: 'static' },
       { head: student.studentNo, relation: '所属专业', tail: student.major, time: '-', type: 'static' },
-      { head: student.studentNo, relation: '所属班级', tail: student.className, time: '-', type: 'static' }
-    ] : []
+      { head: student.studentNo, relation: '所属班级', tail: student.className, time: '-', type: 'static' },
+      { head: student.studentNo, relation: '入学年份', tail: String(student.enrollmentYear), time: '-', type: 'static' },
+      { head: student.studentNo, relation: '学籍状态', tail: student.studentStatus === 1 ? '在读' : student.studentStatus === 2 ? '休学' : '其他', time: '-', type: 'static' }
+    ]
     activityStats.total = quadsData.value.length
     activityStats.byRelation = {}
     activityStats.byLevel = {}
@@ -270,12 +281,17 @@ const initGraphChart = (data) => {
     { name: '属性' }
   ]
 
-  if (!data) {
+  // 使用 quadsData 构建图谱（适用于所有学生）
+  if (quadsData.value.length === 0) {
     graphChart.clear()
+    graphChart.setOption({
+      title: { text: '暂无数据', left: 'center', top: 'center' }
+    })
     return
   }
 
-  const studentNo = data.staticRelations?.[0]?.studentNo || data.staticRelations?.[0]?.headName || '未知学号'
+  // 获取学生学号
+  const studentNo = quadsData.value[0]?.head || selectedStudent.value || '未知学号'
   nodes.push({
     name: studentNo,
     category: 0,
@@ -283,37 +299,42 @@ const initGraphChart = (data) => {
     itemStyle: { color: '#409eff' }
   })
 
-  const staticRelations = data.staticRelations || []
-  staticRelations.forEach(kg => {
-    nodes.push({
-      name: kg.tailName,
-      category: 1,
-      symbolSize: 40,
-      itemStyle: { color: '#67c23a' }
-    })
+  // 处理静态关系
+  const staticQuads = quadsData.value.filter(q => q.type === 'static')
+  staticQuads.forEach(q => {
+    if (!nodes.find(n => n.name === q.tail)) {
+      nodes.push({
+        name: q.tail,
+        category: 1,
+        symbolSize: 40,
+        itemStyle: { color: '#67c23a' }
+      })
+    }
     links.push({
       source: studentNo,
-      target: kg.tailName,
-      label: { show: true, formatter: kg.relation },
+      target: q.tail,
+      label: { show: true, formatter: q.relation },
       lineStyle: { color: '#909399', width: 2 }
     })
   })
 
-  const dynamicRelations = data.dynamicRelations || []
-  dynamicRelations.forEach(kg => {
-    nodes.push({
-      name: kg.tailName,
-      category: 2,
-      symbolSize: 35,
-      itemStyle: { color: '#e6a23c' }
-    })
-    let relationLabel = kg.relation
-    if (kg.subRelation) relationLabel += '_' + kg.subRelation
-    if (kg.timeDimension) relationLabel += '\n' + kg.timeDimension
+  // 处理动态关系
+  const dynamicQuads = quadsData.value.filter(q => q.type === 'dynamic')
+  dynamicQuads.forEach(q => {
+    if (!nodes.find(n => n.name === q.tail)) {
+      nodes.push({
+        name: q.tail,
+        category: 2,
+        symbolSize: 35,
+        itemStyle: { color: '#e6a23c' }
+      })
+    }
+    let relationLabel = q.relation
+    if (q.time && q.time !== '-') relationLabel += '\n' + q.time
 
     links.push({
       source: studentNo,
-      target: kg.tailName,
+      target: q.tail,
       label: { show: true, formatter: relationLabel, fontSize: 10 },
       lineStyle: { color: '#f56c6c', width: 2 }
     })
