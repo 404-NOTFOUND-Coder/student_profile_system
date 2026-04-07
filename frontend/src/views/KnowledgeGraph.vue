@@ -130,13 +130,28 @@
 import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
-import { allStudents, knowledgeGraphData } from '@/data/mockData'
+import { allStudents, knowledgeGraphData, allActivities } from '@/data/mockData'
 
 const activeTab = ref('graph')
 const selectedStudent = ref('')
 
 // 学生列表（从统一数据源获取）
 const students = ref(allStudents)
+
+// 活动类型到关系类型的映射
+const getRelationType = (activityType) => {
+  const typeMap = {
+    '科技创新': '比赛获奖',
+    '学科竞赛': '比赛获奖',
+    '文化艺术': '比赛获奖',
+    '体育活动': '比赛获奖',
+    '学术研究': '学术科研',
+    '科研项目': '学术科研',
+    '志愿服务': '志愿服务',
+    '社会实践': '社会实践'
+  }
+  return typeMap[activityType] || '其他活动'
+}
 
 // 模拟关系配置
 const relationsConfig = ref({
@@ -214,7 +229,7 @@ const loadKnowledgeGraph = (studentNo) => {
     activityStats.byLevel = {}
     activityStats.byYear = {}
   } else if (!data && student) {
-    // 如果没有预定义数据但有学生信息，生成基础图谱
+    // 如果没有预定义数据但有学生信息，生成基础图谱和统计
     quadsData.value = [
       { head: student.studentNo, relation: '隶属院系', tail: student.college, time: '-', type: 'static' },
       { head: student.studentNo, relation: '所属专业', tail: student.major, time: '-', type: 'static' },
@@ -222,10 +237,43 @@ const loadKnowledgeGraph = (studentNo) => {
       { head: student.studentNo, relation: '入学年份', tail: String(student.enrollmentYear), time: '-', type: 'static' },
       { head: student.studentNo, relation: '学籍状态', tail: student.studentStatus === 1 ? '在读' : student.studentStatus === 2 ? '休学' : '其他', time: '-', type: 'static' }
     ]
+
+    // 从 allActivities 计算该学生的活动统计
+    const studentActivities = allActivities.filter(a => a.participants && a.participants.includes(studentNo))
+    const dynamicQuads = studentActivities.map(a => ({
+      head: studentNo,
+      relation: getRelationType(a.type),
+      tail: a.name,
+      time: a.time,
+      type: 'dynamic'
+    }))
+    quadsData.value.push(...dynamicQuads)
+
+    // 统计关系类型
+    const byRelation = {}
+    dynamicQuads.forEach(q => {
+      byRelation[q.relation] = (byRelation[q.relation] || 0) + 1
+    })
+
+    // 统计活动级别
+    const byLevel = {}
+    studentActivities.forEach(a => {
+      byLevel[a.level] = (byLevel[a.level] || 0) + 1
+    })
+
+    // 统计年份
+    const byYear = {}
+    studentActivities.forEach(a => {
+      if (a.time) {
+        const year = a.time.substring(0, 4)
+        byYear[year] = (byYear[year] || 0) + 1
+      }
+    })
+
     activityStats.total = quadsData.value.length
-    activityStats.byRelation = {}
-    activityStats.byLevel = {}
-    activityStats.byYear = {}
+    activityStats.byRelation = byRelation
+    activityStats.byLevel = byLevel
+    activityStats.byYear = byYear
   } else {
     // 更新四元组数据
     quadsData.value = [
