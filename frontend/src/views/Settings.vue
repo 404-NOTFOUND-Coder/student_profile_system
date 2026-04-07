@@ -60,21 +60,6 @@
             
             <div class="setting-item">
               <div class="setting-info">
-                <div class="setting-label">预警阈值</div>
-                <div class="setting-desc">当 GPA 低于此值时触发预警</div>
-              </div>
-              <el-input-number 
-                v-model="settings.gpaThreshold" 
-                :min="1" 
-                :max="4" 
-                :step="0.1" 
-                :precision="1"
-                style="width: 120px;"
-              />
-            </div>
-            
-            <div class="setting-item">
-              <div class="setting-info">
                 <div class="setting-label">邮件通知</div>
                 <div class="setting-desc">通过邮件发送预警通知</div>
               </div>
@@ -152,7 +137,6 @@
               <el-select v-model="settings.defaultSortField" style="width: 150px;">
                 <el-option label="学号" value="studentNo" />
                 <el-option label="姓名" value="name" />
-                <el-option label="GPA" value="gpa" />
                 <el-option label="更新时间" value="updateTime" />
               </el-select>
             </div>
@@ -331,7 +315,6 @@ const settings = reactive({
   
   // 通知设置
   warningNotification: true,
-  gpaThreshold: 2.0,
   emailNotification: true,
   siteNotification: true,
   updateNotification: true,
@@ -382,7 +365,6 @@ const resetSettings = () => {
     sidebarCollapsed: false,
     themeColor: '#409eff',
     warningNotification: true,
-    gpaThreshold: 2.0,
     emailNotification: true,
     siteNotification: true,
     updateNotification: true,

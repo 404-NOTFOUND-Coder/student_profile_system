@@ -52,10 +52,7 @@
             <div class="stat-value">{{ userInfo.loginCount }}</div>
             <div class="stat-label">登录次数</div>
           </div>
-          <div class="stat-item" v-if="isStudent">
-            <div class="stat-value">{{ userInfo.avgGpa }}</div>
-            <div class="stat-label">平均绩点</div>
-          </div>
+
           <div class="stat-item" v-if="isFudaoyuan">
             <div class="stat-value">{{ userInfo.warningCount }}</div>
             <div class="stat-label">预警学生</div>
@@ -367,7 +364,6 @@ const getUserInfoByRole = () => {
       className: student.className || '1班',
       enrollmentYear: student.enrollmentYear || 2020,
       studentStatus: student.studentStatus === 1 ? '在读' : '其他',
-      avgGpa: student.gpa || 3.5,
       email: student.email || 'student@university.edu.cn',
       phone: student.phone || '13800138003'
     }

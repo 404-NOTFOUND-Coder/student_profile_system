@@ -44,7 +44,7 @@
 
     <!-- 核心指标 -->
     <el-row :gutter="20" class="mb-20">
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="metric-card">
           <div class="metric-header">
             <el-icon size="24" color="#409eff"><Odometer /></el-icon>
@@ -54,7 +54,7 @@
           <div class="metric-desc">越高表示知识面越广泛</div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="metric-card">
           <div class="metric-header">
             <el-icon size="24" color="#67c23a"><DataLine /></el-icon>
@@ -64,17 +64,7 @@
           <div class="metric-desc">偏离标准培养方案程度</div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="metric-card">
-          <div class="metric-header">
-            <el-icon size="24" color="#e6a23c"><TrendCharts /></el-icon>
-            <span>平均绩点</span>
-          </div>
-          <div class="metric-value">{{ profile.gpa || 0 }}</div>
-          <div class="metric-desc">满点4.0</div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-card shadow="hover" class="metric-card">
           <div class="metric-header">
             <el-icon size="24" color="#f56c6c"><Medal /></el-icon>
@@ -110,52 +100,6 @@
             </div>
           </div>
           <div ref="radarChartRef" class="radar-chart"></div>
-        </el-card>
-
-        <!-- 学业分析 -->
-        <el-card shadow="hover" class="mb-20">
-          <template #header>
-            <div class="card-header">
-              <span>📚 学业分析</span>
-              <el-tabs v-model="academicTab">
-                <el-tab-pane label="课程成绩" name="score" />
-                <el-tab-pane label="知识掌握" name="knowledge" />
-                <el-tab-pane label="学业趋势" name="trend" />
-              </el-tabs>
-            </div>
-          </template>
-
-          <div v-show="academicTab === 'score'">
-            <el-table :data="coursePerformance" stripe>
-              <el-table-column prop="courseName" label="课程名称" />
-              <el-table-column prop="semester" label="学期" width="100" />
-              <el-table-column prop="score" label="成绩" width="80">
-                <template #default="{ row }">
-                  <span :class="getScoreClass(row.score)">{{ row.score }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="knowledgeArea" label="知识领域" />
-              <el-table-column label="是否挑战性" width="100">
-                <template #default="{ row }">
-                  <el-tag v-if="row.isChallenge" type="warning" size="small">是</el-tag>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-
-          <div v-show="academicTab === 'knowledge'" ref="knowledgeChartRef" class="bar-chart"></div>
-
-          <div v-show="academicTab === 'trend'">
-            <div class="trend-info">
-              <span class="trend-label">学业趋势：</span>
-              <el-tag :type="getTrendType(profile.academicTrend?.trend)" size="large">
-                {{ getTrendName(profile.academicTrend?.trend) }}
-              </el-tag>
-              <span class="trend-desc">{{ profile.academicTrend?.description }}</span>
-            </div>
-            <div ref="trendChartRef" class="line-chart"></div>
-          </div>
         </el-card>
 
         <!-- 活动时间线 -->
@@ -241,7 +185,7 @@
               <el-avatar :size="36">{{ student.studentNo?.[0] }}</el-avatar>
               <div class="similar-info">
                 <div class="similar-name">{{ student.studentNo }}</div>
-                <div class="similar-meta">{{ student.profileType }} · GPA {{ student.gpa }}</div>
+                <div class="similar-meta">{{ student.profileType }}</div>
               </div>
               <span class="similarity">{{ (student.similarity * 100).toFixed(0) }}%</span>
             </div>
@@ -276,22 +220,16 @@ const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
-const academicTab = ref('score')
 
 const profile = ref({})
 const evidenceChain = ref([])
 const timeline = ref([])
 const warnings = ref([])
 const similarStudents = ref([])
-const coursePerformance = ref([])
 
 const radarChartRef = ref(null)
-const knowledgeChartRef = ref(null)
-const trendChartRef = ref(null)
 
 let radarChart = null
-let knowledgeChart = null
-let trendChart = null
 
 const abilityLevel = computed(() => {
   const levelMap = { 'A+': 5, 'A': 5, 'A-': 4.5, 'B+': 4, 'B': 3.5, 'B-': 3, 'C': 2 }
@@ -327,7 +265,6 @@ const fetchProfile = () => {
 
   if (studentData) {
     profile.value = { ...studentData }
-    coursePerformance.value = studentData.coursePerformance || []
     evidenceChain.value = studentData.evidenceChain || []
     timeline.value = studentData.timeline || []
     warnings.value = allWarnings.filter(w => w.studentNo === studentNo)
@@ -336,7 +273,6 @@ const fetchProfile = () => {
     // 默认使用第一个学生
     const defaultStudent = allStudents[0]
     profile.value = { ...defaultStudent }
-    coursePerformance.value = defaultStudent.coursePerformance || []
     evidenceChain.value = defaultStudent.evidenceChain || []
     timeline.value = defaultStudent.timeline || []
     warnings.value = []
@@ -378,81 +314,19 @@ const initCharts = () => {
       }]
     })
   }
-
-  // 知识掌握柱状图
-  if (knowledgeChartRef.value) {
-    if (knowledgeChart) knowledgeChart.dispose()
-    knowledgeChart = echarts.init(knowledgeChartRef.value)
-    const knowledgeData = coursePerformance.value.length > 0
-      ? coursePerformance.value.map(c => ({ name: c.knowledgeArea, value: c.score }))
-      : [
-          { name: '计算机基础', value: 92 },
-          { name: '系统基础', value: 78 },
-          { name: '数据管理', value: 90 },
-          { name: '人工智能', value: 85 }
-        ]
-    knowledgeChart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: knowledgeData.map(d => d.name), axisLabel: { rotate: 30 } },
-      yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
-      series: [{
-        type: 'bar',
-        data: knowledgeData.map((d, i) => ({
-          value: d.value,
-          itemStyle: { color: ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399'][i % 5] }
-        }))
-      }]
-    })
-  }
-
-  // 学业趋势折线图
-  if (trendChartRef.value) {
-    if (trendChart) trendChart.dispose()
-    trendChart = echarts.init(trendChartRef.value)
-    const trendData = coursePerformance.value.length > 0
-      ? coursePerformance.value.map(c => ({ semester: c.semester, score: c.score }))
-      : [
-          { semester: '2021-1', score: 85 },
-          { semester: '2022-1', score: 88 },
-          { semester: '2023-1', score: 90 }
-        ]
-    trendChart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: trendData.map(d => d.semester) },
-      yAxis: { type: 'value', min: 60, max: 100 },
-      series: [{
-        type: 'line',
-        smooth: true,
-        data: trendData.map(d => d.score),
-        areaStyle: { color: 'rgba(64, 158, 255, 0.2)' },
-        lineStyle: { color: '#409eff' },
-        itemStyle: { color: '#409eff' }
-      }]
-    })
-  }
 }
 
 // 辅助方法
-const getScoreClass = (score) => score >= 90 ? 'score-high' : score >= 80 ? 'score-medium' : 'score-low'
 const getTrendType = (trend) => ({ RISING: 'success', STABLE: 'warning', DECLINING: 'danger' }[trend] || 'info')
 const getTrendName = (trend) => ({ RISING: '上升', STABLE: '稳定', DECLINING: '下降' }[trend] || '未知')
 const getEventType = (type) => ({ '学业': 'success', '竞赛': 'warning', '实践': 'primary', '科研': 'info' }[type] || 'info')
 const getWarningAlertType = (level) => ({ 1: 'info', 2: 'warning', 3: 'error' }[level] || 'info')
 const goToProfile = (studentNo) => router.push(`/student/profile/${studentNo}`)
 
-watch(academicTab, () => {
-  nextTick(() => {
-    knowledgeChart?.resize()
-    trendChart?.resize()
-  })
-})
-
 onMounted(() => {
   fetchProfile()
   window.addEventListener('resize', () => {
     radarChart?.resize()
-    knowledgeChart?.resize()
-    trendChart?.resize()
   })
 })
 </script>
@@ -578,30 +452,6 @@ onMounted(() => {
 .radar-chart {
   width: 100%;
   height: 280px;
-}
-
-.bar-chart {
-  width: 100%;
-  height: 250px;
-}
-
-.line-chart {
-  width: 100%;
-  height: 200px;
-}
-
-.trend-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f5f7fa;
-  border-radius: 8px;
-
-  .trend-label {
-    font-weight: bold;
-  }
 }
 
 .timeline {
@@ -760,8 +610,5 @@ onMounted(() => {
   gap: 12px;
 }
 
-.score-high { color: #67c23a; font-weight: bold; }
-.score-medium { color: #e6a23c; }
-.score-low { color: #909399; }
 .mr-8 { margin-right: 8px; }
 </style>

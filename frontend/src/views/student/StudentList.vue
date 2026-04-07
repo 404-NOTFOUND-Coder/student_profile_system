@@ -61,7 +61,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="gpa" label="GPA" width="180" />
         <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">

@@ -11,11 +11,6 @@
         <div class="stats-value">{{ stats.activeStudents }}</div>
         <div class="stats-label">在读学生</div>
       </el-card>
-      <el-card shadow="hover" class="stats-card">
-        <el-icon size="40" color="#e6a23c"><DataLine /></el-icon>
-        <div class="stats-value">{{ stats.avgGpa }}</div>
-        <div class="stats-label">平均绩点</div>
-      </el-card>
     </div>
 
     <el-row :gutter="20" class="mb-20">
@@ -45,7 +40,6 @@
                 <div class="profile-name">{{ profile.studentNo }}</div>
                 <div class="profile-meta">
                   <span class="profile-type">{{ profile.profileType }}</span>
-                  <span class="profile-gpa">GPA: {{ profile.gpa }}</span>
                 </div>
               </div>
               <el-tag :type="profile.abilityType">{{ profile.abilityLevel }}</el-tag>
@@ -72,15 +66,14 @@ const isStudent = computed(() => userRole === 'student')
 // 统计数据（从统一数据源计算）
 const stats = reactive({
   totalStudents: allStudents.length,
-  activeStudents: allStudents.filter(s => s.studentStatus === 1).length,
-  avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
+  activeStudents: allStudents.filter(s => s.studentStatus === 1).length
 })
 
 // 样本画像（使用核心学生的画像数据）
 const sampleProfiles = ref([
-  { studentNo: '2020010906005', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
-  { studentNo: '2020010906012', profileType: '实践应用型', gpa: 3.12, abilityLevel: 'B+', abilityType: 'warning', avatarColor: '#67c23a' },
-  { studentNo: '2020010906013', profileType: '复合探索型', gpa: 3.42, abilityLevel: 'B+', abilityType: 'info', avatarColor: '#e6a23c' }
+  { studentNo: '2020010906005', profileType: '学术研究型', abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
+  { studentNo: '2020010906012', profileType: '实践应用型', abilityLevel: 'B+', abilityType: 'warning', avatarColor: '#67c23a' },
+  { studentNo: '2020010906013', profileType: '复合探索型', abilityLevel: 'B+', abilityType: 'info', avatarColor: '#e6a23c' }
 ])
 
 const collegeChartRef = ref(null)

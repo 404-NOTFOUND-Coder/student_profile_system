@@ -294,8 +294,7 @@ const createStudent = (studentNo, name, parsedInfo, _index) => ({
   major: parsedInfo.major,
   className: parsedInfo.className,
   enrollmentYear: parsedInfo.enrollmentYear,
-  studentStatus: 1,
-  gpa: parseFloat((2.0 + Math.random() * 2.0).toFixed(2))
+  studentStatus: 1
 })
 
 // 预定义的5个核心学生 - 使用电子科技大学真实学院专业名称
@@ -309,7 +308,6 @@ export const coreStudents = [
     className: '1班',
     enrollmentYear: 2020,
     studentStatus: 1,
-    gpa: 3.85,
     profileScore: 88,
     knowledgeEntropy: 8.5,
     graphEditDistance: 2.3,
@@ -321,13 +319,6 @@ export const coreStudents = [
     practiceTags: ['竞赛选手', '项目骨干', '技术分享者'],
     suggestionTags: ['加强实践经验', '提升团队协作', '关注前沿技术'],
     academicTrend: { trend: 'RISING', description: '学业表现稳步提升' },
-    coursePerformance: [
-      { courseName: '数据结构与算法', semester: '2020-1', score: 95, knowledgeArea: '计算机基础', isChallenge: true },
-      { courseName: '计算机网络', semester: '2020-2', score: 88, knowledgeArea: '系统基础', isChallenge: false },
-      { courseName: '操作系统', semester: '2021-1', score: 92, knowledgeArea: '系统基础', isChallenge: true },
-      { courseName: '数据库原理', semester: '2021-2', score: 90, knowledgeArea: '数据管理', isChallenge: false },
-      { courseName: '人工智能导论', semester: '2022-1', score: 94, knowledgeArea: '人工智能', isChallenge: true }
-    ],
     evidenceChain: [
       { evidenceId: 1, evidenceType: '竞赛获奖', relevance: 0.95, content: 'ACM-ICPC亚洲区域赛银奖', source: '竞赛管理系统' },
       { evidenceId: 2, evidenceType: '科研项目', relevance: 0.88, content: '参与导师AI科研项目', source: '科研管理系统' },
@@ -350,7 +341,6 @@ export const coreStudents = [
     className: '1班',
     enrollmentYear: 2020,
     studentStatus: 1,
-    gpa: 3.12,
     profileScore: 75,
     knowledgeEntropy: 7.2,
     graphEditDistance: 3.5,
@@ -362,14 +352,9 @@ export const coreStudents = [
     practiceTags: ['学生干部', '志愿者标兵', '社团活跃分子'],
     suggestionTags: ['加强理论学习', '提升学术研究能力'],
     academicTrend: { trend: 'STABLE', description: '学业表现稳定' },
-    coursePerformance: [
-      { courseName: '离散数学', semester: '2020-1', score: 82, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: '面向对象编程', semester: '2020-2', score: 85, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: '计算机组成原理', semester: '2021-1', score: 78, knowledgeArea: '系统基础', isChallenge: true }
-    ],
     evidenceChain: [],
     timeline: [],
-    warnings: [{ id: 1, warningMessage: '平均绩点偏低', level: 1, suggestAction: '保持当前学习状态' }]
+    warnings: []
   },
   {
     studentNo: '2020010906013',
@@ -380,7 +365,6 @@ export const coreStudents = [
     className: '1班',
     enrollmentYear: 2020,
     studentStatus: 1,
-    gpa: 3.42,
     profileScore: 78,
     knowledgeEntropy: 7.8,
     graphEditDistance: 2.8,
@@ -392,11 +376,6 @@ export const coreStudents = [
     practiceTags: ['社会实践', '艺术活动', '新媒体运营'],
     suggestionTags: ['深化专业技能', '注重成果积累'],
     academicTrend: { trend: 'RISING', description: '学业表现稳中有升' },
-    coursePerformance: [
-      { courseName: '多媒体技术', semester: '2020-1', score: 88, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: '图形学基础', semester: '2020-2', score: 85, knowledgeArea: '计算机基础', isChallenge: false },
-      { courseName: 'UI设计原理', semester: '2021-1', score: 90, knowledgeArea: '数据管理', isChallenge: false }
-    ],
     evidenceChain: [],
     timeline: [],
     warnings: []
@@ -410,7 +389,6 @@ export const coreStudents = [
     className: '1班',
     enrollmentYear: 2020,
     studentStatus: 1,
-    gpa: 3.65,
     profileScore: 82,
     knowledgeEntropy: 7.5,
     graphEditDistance: 2.5,
@@ -422,11 +400,6 @@ export const coreStudents = [
     practiceTags: ['科研项目', '学科竞赛'],
     suggestionTags: ['拓宽国际视野', '加强交流合作'],
     academicTrend: { trend: 'RISING', description: '学业表现优秀且持续进步' },
-    coursePerformance: [
-      { courseName: '信号与系统', semester: '2020-1', score: 90, knowledgeArea: '计算机基础', isChallenge: true },
-      { courseName: '数字信号处理', semester: '2020-2', score: 88, knowledgeArea: '系统基础', isChallenge: true },
-      { courseName: '通信原理', semester: '2021-1', score: 92, knowledgeArea: '数据管理', isChallenge: false }
-    ],
     evidenceChain: [],
     timeline: [],
     warnings: []
@@ -440,7 +413,6 @@ export const coreStudents = [
     className: '1班',
     enrollmentYear: 2020,
     studentStatus: 2,
-    gpa: 2.85,
     profileScore: 65,
     knowledgeEntropy: 6.5,
     graphEditDistance: 4.2,
@@ -452,13 +424,9 @@ export const coreStudents = [
     practiceTags: [],
     suggestionTags: ['寻求帮助', '制定学习计划'],
     academicTrend: { trend: 'DECLINING', description: '学业表现下滑' },
-    coursePerformance: [
-      { courseName: '电路基础', semester: '2020-1', score: 68, knowledgeArea: '系统基础', isChallenge: false },
-      { courseName: '模拟电子技术', semester: '2020-2', score: 62, knowledgeArea: '系统基础', isChallenge: true }
-    ],
     evidenceChain: [],
     timeline: [],
-    warnings: [{ id: 2, warningMessage: '多门课程不及格,学业困难', level: 2, suggestAction: '需要重点关注,建议约谈家长和导师' }]
+    warnings: [{ id: 2, warningMessage: '学业困难', level: 2, suggestAction: '需要重点关注' }]
   }
 ]
 
@@ -603,19 +571,18 @@ export const knowledgeGraphData = {
 export const dashboardStats = {
   totalStudents: allStudents.length,
   activeStudents: allStudents.filter(s => s.studentStatus === 1).length,
-  warningCount: allWarnings.length,
-  avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
+  warningCount: allWarnings.length
 }
 
 // 相似学生数据
 export const similarStudents = {
   '2020010906005': [
-    { studentNo: '2020010906013', profileType: '复合探索型', gpa: 3.42, similarity: 0.75 },
-    { studentNo: '2020010906020', profileType: '学术研究型', gpa: 3.65, similarity: 0.68 }
+    { studentNo: '2020010906013', profileType: '复合探索型', similarity: 0.75 },
+    { studentNo: '2020010906020', profileType: '学术研究型', similarity: 0.68 }
   ],
   '2020010906012': [
-    { studentNo: '2020010906005', profileType: '学术研究型', gpa: 3.85, similarity: 0.72 },
-    { studentNo: '2020010906020', profileType: '学术研究型', gpa: 3.65, similarity: 0.65 }
+    { studentNo: '2020010906005', profileType: '学术研究型', similarity: 0.72 },
+    { studentNo: '2020010906020', profileType: '学术研究型', similarity: 0.65 }
   ]
 }
 

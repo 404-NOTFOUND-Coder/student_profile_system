@@ -67,18 +67,31 @@ const hasProfile = computed(() => !!profileReport.value)
 const formattedReport = computed(() => {
   if (!profileReport.value) return ''
   let html = profileReport.value
-    // 标题处理
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/^(\d+)\. (.+)$/gm, '<li><strong>$1.</strong> $2</li>')
-  // 段落处理
+
+  // 处理无序列表项 * 内容（需要处理内容中的加粗）
+  html = html.replace(/^\* (.+)$/gm, (match, content) => {
+    // 使用贪婪匹配处理加粗 **text** -> <strong>text</strong>
+    const processedContent = content.replace(/\*\*(.+)\*\*/g, '<strong>$1</strong>')
+    return `<li>${processedContent}</li>`
+  })
+
+  // 处理有序列表项 1. 内容
+  html = html.replace(/^(\d+)\. (.+)$/gm, (match, num, content) => {
+    const processedContent = content.replace(/\*\*(.+)\*\*/g, '<strong>$1</strong>')
+    return `<li><strong>${num}.</strong> ${processedContent}</li>`
+  })
+
+  // 标题处理：### 标题 -> <h3>标题</h3>
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>')
+
+  // 段落处理：保持已有标签的内容不变，其他按段落处理
   html = html.split('\n\n').map(p => {
     if (p.startsWith('<h') || p.startsWith('<li')) return p
+    // 处理段落中的加粗（使用贪婪匹配）
+    p = p.replace(/\*\*(.+)\*\*/g, '<strong>$1</strong>')
     return `<p>${p}</p>`
   }).join('')
+
   return html
 })
 
@@ -193,17 +206,27 @@ const resetProfile = () => {
 
 <style scoped lang="scss">
 .profile-generate-container {
-  padding: 20px;
+  width: 100%;
+  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
 }
 
 .mb-20 {
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 30px;
 }
 
 .generate-form {
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: center;
 
   .student-no-input {
     width: 300px;
@@ -217,6 +240,8 @@ const resetProfile = () => {
 }
 
 .profile-report {
+  width: 100%;
+  max-width: 1200px;
   margin-bottom: 20px;
 }
 
@@ -226,33 +251,40 @@ const resetProfile = () => {
   border-radius: 8px;
   line-height: 1.8;
   font-size: 14px;
-
-  :deep(h2) {
-    font-size: 18px;
-    color: #409eff;
-    margin: 20px 0 10px 0;
-    border-bottom: 2px solid #409eff;
-    padding-bottom: 8px;
-  }
+  word-wrap: break-word;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
 
   :deep(h3) {
     font-size: 16px;
     color: #303133;
-    margin: 16px 0 8px 0;
+    margin: 20px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #409eff;
+    font-weight: bold;
+
+    &:first-child {
+      margin-top: 0;
+    }
   }
 
   :deep(p) {
-    margin: 10px 0;
+    margin: 12px 0;
     text-indent: 2em;
   }
 
   :deep(li) {
     margin: 8px 0;
     padding-left: 1em;
+    list-style-type: none;
   }
 
   :deep(strong) {
     color: #409eff;
+    font-weight: bold;
+  }
+
+  :deep(em) {
+    font-style: italic;
   }
 }
 
@@ -264,6 +296,8 @@ const resetProfile = () => {
 }
 
 .loading-card {
+  width: 100%;
+  max-width: 1200px;
   text-align: center;
   padding: 40px;
 }
