@@ -12,11 +12,6 @@
         <div class="stats-label">在读学生</div>
       </el-card>
       <el-card shadow="hover" class="stats-card">
-        <el-icon size="40" color="#f56c6c"><Warning /></el-icon>
-        <div class="stats-value">{{ stats.warningCount }}</div>
-        <div class="stats-label">学业预警</div>
-      </el-card>
-      <el-card v-if="isStudent" shadow="hover" class="stats-card">
         <el-icon size="40" color="#e6a23c"><DataLine /></el-icon>
         <div class="stats-value">{{ stats.avgGpa }}</div>
         <div class="stats-label">平均绩点</div>
@@ -35,42 +30,26 @@
     </el-row>
 
     <el-row :gutter="20">
-      <el-col :span="12">
-        <el-card>
-          <template #header>
-            <span>最近学业预警</span>
-          </template>
-          <el-table :data="warnings" style="width: 100%">
-            <el-table-column prop="studentNo" label="学号" width="160" />
-            <el-table-column prop="warningType" label="预警类型" width="100">
-              <template #default="{ row }">
-                <el-tag :type="getWarningType(row.level)" size="small">
-                  {{ row.levelName }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="warningMessage" label="预警信息" />
-          </el-table>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
+      <el-col :span="24">
         <el-card>
           <template #header>
             <span>学生画像示例</span>
           </template>
-          <div v-for="profile in sampleProfiles" :key="profile.studentNo"
-               class="profile-item" @click="goToProfile(profile.studentNo)">
-            <el-avatar :size="40" :style="{ background: profile.avatarColor }">
-              {{ profile.studentNo[0] }}
-            </el-avatar>
-            <div class="profile-info">
-              <div class="profile-name">{{ profile.studentNo }}</div>
-              <div class="profile-meta">
-                <span class="profile-type">{{ profile.profileType }}</span>
-                <span class="profile-gpa">GPA: {{ profile.gpa }}</span>
+          <div class="profile-list">
+            <div v-for="profile in sampleProfiles" :key="profile.studentNo"
+                 class="profile-item" @click="goToProfile(profile.studentNo)">
+              <el-avatar :size="40" :style="{ background: profile.avatarColor }">
+                {{ profile.studentNo[0] }}
+              </el-avatar>
+              <div class="profile-info">
+                <div class="profile-name">{{ profile.studentNo }}</div>
+                <div class="profile-meta">
+                  <span class="profile-type">{{ profile.profileType }}</span>
+                  <span class="profile-gpa">GPA: {{ profile.gpa }}</span>
+                </div>
               </div>
+              <el-tag :type="profile.abilityType">{{ profile.abilityLevel }}</el-tag>
             </div>
-            <el-tag :type="profile.abilityType">{{ profile.abilityLevel }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -82,7 +61,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import { allStudents, allWarnings, collegeStats } from '@/data/mockData'
+import { allStudents, collegeStats } from '@/data/mockData'
 
 const router = useRouter()
 
@@ -94,12 +73,8 @@ const isStudent = computed(() => userRole === 'student')
 const stats = reactive({
   totalStudents: allStudents.length,
   activeStudents: allStudents.filter(s => s.studentStatus === 1).length,
-  warningCount: allWarnings.length,
   avgGpa: parseFloat((allStudents.reduce((sum, s) => sum + s.gpa, 0) / allStudents.length).toFixed(2))
 })
-
-// 预警列表（从统一数据源获取）
-const warnings = ref(allWarnings.slice(0, 5))
 
 // 样本画像（使用核心学生的画像数据）
 const sampleProfiles = ref([
@@ -146,11 +121,6 @@ const updateCollegeChart = () => {
     }],
     grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true }
   })
-}
-
-const getWarningType = (level) => {
-  const types = { 1: 'info', 2: 'warning', 3: 'danger' }
-  return types[level] || 'info'
 }
 
 const goToProfile = (studentNo) => {
@@ -209,16 +179,23 @@ onMounted(() => {
   margin: 16px 0;
 }
 
+.profile-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
 .profile-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 12px 20px;
   background: #f5f7fa;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  flex: 1;
+  min-width: 280px;
 
   &:hover {
     background: #ecf5ff;

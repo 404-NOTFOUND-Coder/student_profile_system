@@ -5,9 +5,12 @@
         <div class="card-header">
           <span>学生知识图谱</span>
           <div class="header-actions">
-            <el-select v-model="selectedStudent" placeholder="选择学生" filterable @change="onStudentChange" class="student-select">
+            <el-select v-model="selectedStudent" placeholder="选择学号（留空显示全局图谱）" filterable clearable @change="onStudentChange" class="student-select">
               <el-option v-for="student in filteredStudents" :key="student.studentNo" :label="student.studentNo" :value="student.studentNo" />
             </el-select>
+            <el-button type="primary" @click="loadGlobalGraph" v-if="selectedStudent">
+              查看全局图谱
+            </el-button>
             <el-button-group>
               <el-button @click="openAddDialog('static')">添加静态关系</el-button>
               <el-button @click="openAddDialog('dynamic')">添加动态关系</el-button>
@@ -489,7 +492,125 @@ const getRecentYearCount = () => {
 }
 
 const onStudentChange = (studentNo) => {
-  loadKnowledgeGraph(studentNo)
+  if (studentNo) {
+    loadKnowledgeGraph(studentNo)
+  } else {
+    loadGlobalGraph()
+  }
+}
+
+// 加载全局图谱
+const loadGlobalGraph = () => {
+  selectedStudent.value = ''
+  quadsData.value = []
+  activityStats.total = 0
+  activityStats.byRelation = {}
+  activityStats.byLevel = {}
+  activityStats.byYear = {}
+
+  nextTick(() => {
+    initGlobalGraphChart()
+    initStatCharts()
+  })
+}
+
+// 初始化全局图谱图表
+const initGlobalGraphChart = () => {
+  if (!graphContainerRef.value) return
+
+  if (!graphChart) {
+    graphChart = echarts.init(graphContainerRef.value)
+  }
+
+  const nodes = []
+  const links = []
+  const categories = [
+    { name: '学生' },
+    { name: '学院' },
+    { name: '专业' },
+    { name: '活动' }
+  ]
+
+  // 获取所有学院和专业
+  const colleges = [...new Set(allStudents.map(s => s.college))]
+  const majors = [...new Set(allStudents.map(s => s.major))]
+
+  // 添加学院节点
+  colleges.slice(0, 10).forEach((college, idx) => {
+    nodes.push({
+      name: college,
+      category: 1,
+      symbolSize: 50,
+      itemStyle: { color: '#67c23a' }
+    })
+  })
+
+  // 添加专业节点
+  majors.slice(0, 15).forEach((major, idx) => {
+    nodes.push({
+      name: major,
+      category: 2,
+      symbolSize: 35,
+      itemStyle: { color: '#e6a23c' }
+    })
+  })
+
+  // 添加部分活动节点
+  const activities = [...new Set(allActivities.map(a => a.name))].slice(0, 20)
+  activities.forEach((activity) => {
+    nodes.push({
+      name: activity,
+      category: 3,
+      symbolSize: 25,
+      itemStyle: { color: '#909399' }
+    })
+  })
+
+  // 添加学生-学院链接
+  allStudents.slice(0, 50).forEach(student => {
+    nodes.push({
+      name: student.studentNo,
+      category: 0,
+      symbolSize: 20,
+      itemStyle: { color: '#409eff' }
+    })
+    links.push({
+      source: student.studentNo,
+      target: student.college,
+      label: { show: false },
+      lineStyle: { color: '#c0c0c0', width: 1, opacity: 0.5 }
+    })
+  })
+
+  graphChart.setOption({
+    title: { text: '学生知识图谱（全局视图）', left: 'center', top: 10, textStyle: { fontSize: 16, fontWeight: 'bold' } },
+    tooltip: {
+      trigger: 'item',
+      formatter: (params) => {
+        if (params.dataType === 'node') {
+          return params.data.name
+        }
+        return `${params.data.source} → ${params.data.target}`
+      }
+    },
+    legend: [{ data: categories.map(c => c.name), bottom: 10 }],
+    series: [{
+      type: 'graph',
+      layout: 'force',
+      symbolSize: 40,
+      roam: true,
+      draggable: true,
+      categories: categories,
+      label: { show: true, position: 'bottom', fontSize: 10 },
+      edgeSymbol: ['circle', 'arrow'],
+      edgeSymbolSize: [4, 4],
+      data: nodes,
+      links: links,
+      lineStyle: { opacity: 0.6, width: 2, curveness: 0.1 },
+      emphasis: { focus: 'adjacency', lineStyle: { width: 4 } },
+      force: { repulsion: 100, edgeLength: [50, 150], layoutAnimation: true }
+    }]
+  })
 }
 
 const openAddDialog = (type) => {
@@ -526,12 +647,9 @@ watch(activeTab, () => {
 })
 
 onMounted(() => {
-  // 默认选中第一个学生
+  // 默认加载全局图谱
   nextTick(() => {
-    if (students.value.length > 0) {
-      selectedStudent.value = students.value[0].studentNo
-      loadKnowledgeGraph(selectedStudent.value)
-    }
+    loadGlobalGraph()
   })
   window.addEventListener('resize', () => {
     graphChart?.resize()
@@ -553,6 +671,10 @@ onMounted(() => {
 
 .mt-20 {
   margin-top: 20px;
+}
+
+.view-mode-hint {
+  margin-bottom: 16px;
 }
 
 .card-header {

@@ -22,25 +22,13 @@ const routes = [
         path: 'student/list',
         name: 'StudentList',
         component: () => import('@/views/student/StudentList.vue'),
-        meta: { title: '学生档案', icon: 'User' }
+        meta: { title: '学生基本信息', icon: 'User' }
       },
       {
-        path: 'student/profile/:studentNo',
-        name: 'StudentProfile',
-        component: () => import('@/views/student/StudentProfile.vue'),
-        meta: { title: '学生画像' }
-      },
-      {
-        path: 'warning',
-        name: 'AcademicWarning',
-        component: () => import('@/views/Warning.vue'),
-        meta: { title: '学业预警', icon: 'Warning' }
-      },
-      {
-        path: 'analytics',
-        name: 'Analytics',
-        component: () => import('@/views/Analytics.vue'),
-        meta: { title: '数据分析', icon: 'DataAnalysis' }
+        path: 'student/activities',
+        name: 'StudentActivities',
+        component: () => import('@/views/ActivityManagement.vue'),
+        meta: { title: '学生活动管理', icon: 'Management' }
       },
       {
         path: 'knowledge-graph',
@@ -49,16 +37,34 @@ const routes = [
         meta: { title: '知识图谱', icon: 'Connection' }
       },
       {
+        path: 'profile/generate',
+        name: 'ProfileGenerate',
+        component: () => import('@/views/ProfileGenerate.vue'),
+        meta: { title: '学生画像', icon: 'UserFilled' }
+      },
+      {
+        path: 'student/profile/:studentNo',
+        name: 'StudentProfile',
+        component: () => import('@/views/student/StudentProfile.vue'),
+        meta: { title: '学生画像详情' }
+      },
+      {
         path: 'activity/recommend',
         name: 'ActivityRecommend',
         component: () => import('@/views/ActivityRecommend.vue'),
-        meta: { title: '活动推荐', icon: 'Bell' }
+        meta: { title: '学业活动推荐', icon: 'Bell' }
       },
       {
-        path: 'activity/manage',
-        name: 'ActivityManagement',
-        component: () => import('@/views/ActivityManagement.vue'),
-        meta: { title: '活动管理', icon: 'Management' }
+        path: 'analytics',
+        name: 'Analytics',
+        component: () => import('@/views/Analytics.vue'),
+        meta: { title: '数据分析', icon: 'DataAnalysis' }
+      },
+      {
+        path: 'warning',
+        name: 'AcademicWarning',
+        component: () => import('@/views/Warning.vue'),
+        meta: { title: '学业预警', icon: 'Warning', hidden: true }
       },
       {
         path: 'personal-center',

@@ -52,8 +52,6 @@
         <div class="account-list">
           <span>系统管理员：admin / admin123</span>
           <span>教务处老师：jiaowu / jiaowu123</span>
-          <span>辅导员：fudaoyuan / fudaoyuan123</span>
-          <span>普通学生：student / student123</span>
         </div>
       </div>
     </el-card>

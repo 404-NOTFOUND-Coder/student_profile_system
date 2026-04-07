@@ -695,34 +695,12 @@ export const userAccounts = [
   {
     username: 'jiaowu',
     password: 'jiaowu123',
-    role: 'teacher',
+    role: 'jiaowu',
     roleName: '教务处老师',
     name: '张教务',
     employeeNo: '20240002',
     department: '教务处',
     position: '教务科科长'
-  },
-  {
-    username: 'fudaoyuan',
-    password: 'fudaoyuan123',
-    role: 'counselor',
-    roleName: '辅导员',
-    name: '李辅导员',
-    employeeNo: '20240003',
-    department: '计算机科学与工程学院（网络空间安全学院）',
-    position: '2020级辅导员'
-  },
-  {
-    username: 'student',
-    password: 'student123',
-    role: 'student',
-    roleName: '普通学生',
-    name: '张伟',
-    employeeNo: '20240004',
-    studentNo: '2020010906005',
-    college: '计算机科学与工程学院（网络空间安全学院）',
-    major: '计算机科学与技术',
-    className: '1班'
   }
 ]
 

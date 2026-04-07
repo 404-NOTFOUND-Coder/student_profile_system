@@ -64,9 +64,6 @@
         <el-table-column prop="gpa" label="GPA" width="180" />
         <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="viewProfile(row)">
-              画像
-            </el-button>
             <el-button type="primary" link @click="handleEdit(row)">
               编辑
             </el-button>
@@ -286,13 +283,9 @@ const handleDelete = (row) => {
   ElMessageBox.confirm('确定要删除该学生档案吗？', '提示', {
     type: 'warning'
   }).then(() => {
-    ElMessage.success('删除成功（模拟）')
-    fetchList()
+  ElMessage.success('删除成功（模拟）')
+  fetchList()
   }).catch(() => {})
-}
-
-const viewProfile = (row) => {
-  router.push(`/student/profile/${row.studentNo}`)
 }
 
 const handleSizeChange = (val) => {

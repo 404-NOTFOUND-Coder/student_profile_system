@@ -7,7 +7,7 @@
         <span v-if="!isCollapse">学生画像系统</span>
         <el-icon v-else><Operation /></el-icon>
       </div>
-      
+
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
@@ -18,40 +18,40 @@
           <el-icon><Odometer /></el-icon>
           <template #title>首页</template>
         </el-menu-item>
-        
-        <el-menu-item index="/student/list">
-          <el-icon><User /></el-icon>
-          <template #title>学生档案</template>
-        </el-menu-item>
 
-        <el-menu-item index="/warning">
-          <el-icon><Warning /></el-icon>
-          <template #title>学业预警</template>
-        </el-menu-item>
-        
-        <el-menu-item index="/analytics">
-          <el-icon><DataAnalysis /></el-icon>
-          <template #title>数据分析</template>
-        </el-menu-item>
-        
-        <el-sub-menu index="activity">
+        <el-sub-menu index="student">
           <template #title>
-            <el-icon><Calendar /></el-icon>
-            <span>活动中心</span>
+            <el-icon><User /></el-icon>
+            <span>学生档案</span>
           </template>
-          <el-menu-item index="/activity/recommend">
-            <el-icon><Bell /></el-icon>
-            <template #title>活动推荐</template>
+          <el-menu-item index="/student/list">
+            <el-icon><Document /></el-icon>
+            <template #title>学生基本信息</template>
           </el-menu-item>
-          <el-menu-item index="/activity/manage">
+          <el-menu-item index="/student/activities">
             <el-icon><Management /></el-icon>
-            <template #title>活动管理</template>
+            <template #title>学生活动管理</template>
           </el-menu-item>
         </el-sub-menu>
-        
+
         <el-menu-item index="/knowledge-graph">
           <el-icon><Connection /></el-icon>
           <template #title>知识图谱</template>
+        </el-menu-item>
+
+        <el-menu-item index="/profile/generate">
+          <el-icon><UserFilled /></el-icon>
+          <template #title>学生画像</template>
+        </el-menu-item>
+
+        <el-menu-item index="/activity/recommend">
+          <el-icon><Bell /></el-icon>
+          <template #title>学业活动推荐</template>
+        </el-menu-item>
+
+        <el-menu-item index="/analytics">
+          <el-icon><DataAnalysis /></el-icon>
+          <template #title>数据分析</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
