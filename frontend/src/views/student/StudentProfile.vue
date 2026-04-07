@@ -6,10 +6,10 @@
         <el-card shadow="hover">
           <div class="profile-header">
             <el-avatar :size="80" :style="{ background: headerBgColor }">
-              {{ profile.name?.[0] || 'S' }}
+              {{ profile.studentNo?.[0] || 'S' }}
             </el-avatar>
             <div class="header-info">
-              <h2 class="student-name">{{ profile.name }}</h2>
+              <h2 class="student-name">{{ profile.studentNo }}</h2>
               <div class="basic-info">
                 <el-tag size="small">{{ profile.studentNo }}</el-tag>
                 <span class="info-item">
@@ -238,9 +238,9 @@
           <div class="similar-list">
             <div v-for="student in similarStudents" :key="student.studentNo"
                  class="similar-item" @click="goToProfile(student.studentNo)">
-              <el-avatar :size="36">{{ student.name?.[0] }}</el-avatar>
+              <el-avatar :size="36">{{ student.studentNo?.[0] }}</el-avatar>
               <div class="similar-info">
-                <div class="similar-name">{{ student.name }}</div>
+                <div class="similar-name">{{ student.studentNo }}</div>
                 <div class="similar-meta">{{ student.profileType }} · GPA {{ student.gpa }}</div>
               </div>
               <span class="similarity">{{ (student.similarity * 100).toFixed(0) }}%</span>

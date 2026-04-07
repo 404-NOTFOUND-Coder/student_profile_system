@@ -9,8 +9,8 @@
 
       <!-- 筛选表单 -->
       <el-form :inline="true" :model="queryForm" class="search-form">
-        <el-form-item label="学生姓名">
-          <el-input v-model="queryForm.studentName" placeholder="请输入学生姓名" clearable />
+        <el-form-item label="学号">
+          <el-input v-model="queryForm.studentNo" placeholder="请输入学号" clearable />
         </el-form-item>
         <el-form-item label="活动类型">
           <el-select v-model="queryForm.type" placeholder="请选择类型" clearable class="select-wide">
@@ -36,8 +36,7 @@
       <!-- 推荐列表 -->
       <el-table :data="tableData" stripe border v-loading="loading">
         <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="studentNo" label="学号" width="120" />
-        <el-table-column prop="studentName" label="学生姓名" width="100" />
+        <el-table-column prop="studentNo" label="学号" width="180" />
         <el-table-column prop="activity" label="推荐活动" min-width="200" />
         <el-table-column prop="reason" label="推荐理由" min-width="250" />
         <el-table-column prop="matchScore" label="匹配度" width="100">
@@ -70,7 +69,7 @@ const loading = ref(false)
 const tableData = ref([])
 
 const queryForm = reactive({
-  studentName: '',
+  studentNo: '',
   type: ''
 })
 
@@ -86,8 +85,8 @@ const loadData = () => {
 
   let filtered = [...activityRecommendations]
 
-  if (queryForm.studentName) {
-    filtered = filtered.filter(r => r.studentName.includes(queryForm.studentName))
+  if (queryForm.studentNo) {
+    filtered = filtered.filter(r => r.studentNo.includes(queryForm.studentNo))
   }
 
   pagination.total = filtered.length
@@ -104,7 +103,7 @@ const handleSearch = () => {
 }
 
 const handleReset = () => {
-  queryForm.studentName = ''
+  queryForm.studentNo = ''
   queryForm.type = ''
   pagination.pageNum = 1
   loadData()

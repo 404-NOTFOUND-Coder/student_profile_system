@@ -6,7 +6,7 @@
           <span>学生知识图谱</span>
           <div class="header-actions">
             <el-select v-model="selectedStudent" placeholder="选择学生" filterable @change="onStudentChange" class="student-select">
-              <el-option v-for="student in students" :key="student.studentNo" :label="student.name + ' (' + student.studentNo + ')'" :value="student.studentNo" />
+              <el-option v-for="student in students" :key="student.studentNo" :label="student.studentNo" :value="student.studentNo" />
             </el-select>
             <el-button-group>
               <el-button @click="openAddDialog('static')">添加静态关系</el-button>
@@ -178,7 +178,6 @@ const dialogVisible = ref(false)
 const dialogType = ref('static')
 const relationForm = reactive({
   studentNo: '',
-  studentName: '',
   relation: '',
   subRelation: '',
   tailName: '',
@@ -208,9 +207,9 @@ const loadKnowledgeGraph = (studentNo) => {
     // 如果没有预定义数据，生成空图谱
     const student = students.value.find(s => s.studentNo === studentNo)
     quadsData.value = student ? [
-      { head: student.name, relation: '隶属院系', tail: student.college, time: '-', type: 'static' },
-      { head: student.name, relation: '所属专业', tail: student.major, time: '-', type: 'static' },
-      { head: student.name, relation: '所属班级', tail: student.className, time: '-', type: 'static' }
+      { head: student.studentNo, relation: '隶属院系', tail: student.college, time: '-', type: 'static' },
+      { head: student.studentNo, relation: '所属专业', tail: student.major, time: '-', type: 'static' },
+      { head: student.studentNo, relation: '所属班级', tail: student.className, time: '-', type: 'static' }
     ] : []
     activityStats.total = quadsData.value.length
     activityStats.byRelation = {}
@@ -220,14 +219,14 @@ const loadKnowledgeGraph = (studentNo) => {
     // 更新四元组数据
     quadsData.value = [
       ...data.staticRelations.map(kg => ({
-        head: kg.headName,
+        head: kg.studentNo || kg.headName,
         relation: kg.relation,
         tail: kg.tailName,
         time: '-',
         type: 'static'
       })),
       ...data.dynamicRelations.map(kg => ({
-        head: kg.headName,
+        head: kg.studentNo || kg.headName,
         relation: kg.relation,
         tail: kg.tailName,
         time: kg.timeDimension,
@@ -276,9 +275,9 @@ const initGraphChart = (data) => {
     return
   }
 
-  const studentName = data.staticRelations?.[0]?.headName || '学生'
+  const studentNo = data.staticRelations?.[0]?.studentNo || data.staticRelations?.[0]?.headName || '未知学号'
   nodes.push({
-    name: studentName,
+    name: studentNo,
     category: 0,
     symbolSize: 60,
     itemStyle: { color: '#409eff' }
@@ -293,7 +292,7 @@ const initGraphChart = (data) => {
       itemStyle: { color: '#67c23a' }
     })
     links.push({
-      source: studentName,
+      source: studentNo,
       target: kg.tailName,
       label: { show: true, formatter: kg.relation },
       lineStyle: { color: '#909399', width: 2 }
@@ -313,7 +312,7 @@ const initGraphChart = (data) => {
     if (kg.timeDimension) relationLabel += '\n' + kg.timeDimension
 
     links.push({
-      source: studentName,
+      source: studentNo,
       target: kg.tailName,
       label: { show: true, formatter: relationLabel, fontSize: 10 },
       lineStyle: { color: '#f56c6c', width: 2 }
@@ -417,7 +416,6 @@ const openAddDialog = (type) => {
   }
   dialogType.value = type
   relationForm.studentNo = selectedStudent.value
-  relationForm.studentName = students.value.find(s => s.studentNo === selectedStudent.value)?.name || ''
   dialogVisible.value = true
 }
 

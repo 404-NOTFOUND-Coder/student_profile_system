@@ -54,10 +54,10 @@
           </template>
         </el-table-column>
         <el-table-column prop="time" label="时间" width="120" />
-        <el-table-column prop="participants" label="参与学生" min-width="150">
+        <el-table-column prop="participants" label="参与学号" min-width="180">
           <template #default="{ row }">
             <span v-for="(no, idx) in row.participants.slice(0, 3)" :key="no">
-              {{ getStudentName(no) }}{{ idx < Math.min(row.participants.length, 3) - 1 ? '、' : '' }}
+              {{ no }}{{ idx < Math.min(row.participants.length, 3) - 1 ? '、' : '' }}
             </span>
             <span v-if="row.participants.length > 3">等{{ row.participants.length }}人</span>
           </template>
@@ -104,10 +104,10 @@
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="活动描述" :span="2">{{ currentActivity.description }}</el-descriptions-item>
-        <el-descriptions-item label="参与学生" :span="2">
+        <el-descriptions-item label="参与学号" :span="2">
           <div class="participant-list">
             <span v-for="no in currentActivity.participants" :key="no" class="participant-tag">
-              {{ getStudentName(no) }} ({{ no }})
+              {{ no }}
             </span>
           </div>
         </el-descriptions-item>
@@ -175,11 +175,6 @@ const handleReset = () => {
 const viewDetail = (row) => {
   currentActivity.value = row
   detailVisible.value = true
-}
-
-const getStudentName = (studentNo) => {
-  const student = allStudents.find(s => s.studentNo === studentNo)
-  return student ? student.name : studentNo
 }
 
 const getTypeTag = (type) => {

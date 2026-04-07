@@ -93,7 +93,8 @@ const handleLogin = async () => {
     )
 
     if (account) {
-      ElMessage.success(`欢迎 ${account.name}（${account.roleName}）`)
+      const displayName = account.studentNo || account.username
+      ElMessage.success(`欢迎 ${displayName}（${account.roleName}）`)
       localStorage.setItem('token', 'mock-jwt-token')
       localStorage.setItem('userRole', account.role)
       localStorage.setItem('userInfo', JSON.stringify(account))

@@ -5,7 +5,7 @@
       <div class="user-profile">
         <div class="user-avatar-section">
           <el-avatar :size="100" :style="{ background: avatarBgColor }">
-            {{ userInfo.name?.charAt(0) || '管' }}
+            {{ userInfo.studentNo || userInfo.employeeNo || '管' }}
           </el-avatar>
           <div class="user-badge">
             <el-tag type="success" size="small">已认证</el-tag>
@@ -13,7 +13,7 @@
         </div>
         <div class="user-basic-info">
           <div class="user-name-row">
-            <span class="user-name">{{ userInfo.name }}</span>
+            <span class="user-name">{{ userInfo.studentNo || userInfo.employeeNo }}</span>
             <el-tag type="warning" size="small">{{ userInfo.role }}</el-tag>
           </div>
           <div class="user-meta">
@@ -46,8 +46,8 @@
       </template>
 
       <el-form :model="userInfo" label-width="100px" class="info-form">
-        <el-form-item label="用户名">
-          <el-input v-model="userInfo.name" placeholder="请输入用户名" />
+        <el-form-item label="学号/工号">
+          <el-input v-model="userInfo.studentNo" placeholder="请输入学号" />
         </el-form-item>
 
         <el-form-item label="工号">
@@ -56,9 +56,19 @@
 
             <el-form-item label="所属部门">
               <el-select v-model="userInfo.department" placeholder="请选择部门">
-                <el-option label="计算机学院" value="计算机学院" />
-                <el-option label="软件学院" value="软件学院" />
-                <el-option label="信息学院" value="信息学院" />
+                <el-option label="计算机科学与工程学院（网络空间安全学院）" value="计算机科学与工程学院（网络空间安全学院）" />
+                <el-option label="信息与软件工程学院（示范性软件学院）" value="信息与软件工程学院（示范性软件学院）" />
+                <el-option label="电子科学与工程学院" value="电子科学与工程学院" />
+                <el-option label="机械与电气工程学院" value="机械与电气工程学院" />
+                <el-option label="自动化工程学院" value="自动化工程学院" />
+                <el-option label="经济与管理学院" value="经济与管理学院" />
+                <el-option label="格拉斯哥学院" value="格拉斯哥学院" />
+                <el-option label="光电科学与工程学院" value="光电科学与工程学院" />
+                <el-option label="公共管理学院" value="公共管理学院" />
+                <el-option label="外国语学院" value="外国语学院" />
+                <el-option label="数学科学学院" value="数学科学学院" />
+                <el-option label="物理学院" value="物理学院" />
+                <el-option label="材料与能源学院" value="材料与能源学院" />
                 <el-option label="教务处" value="教务处" />
               </el-select>
             </el-form-item>
@@ -173,10 +183,10 @@ const passwordFormRef = ref(null)
 const storedUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
 
 const userInfo = reactive({
-  name: storedUserInfo.name || '管理员',
+  studentNo: storedUserInfo.studentNo || storedUserInfo.employeeNo || '20240001',
   employeeNo: storedUserInfo.employeeNo || '20240001',
   role: storedUserInfo.roleName || '系统管理员',
-  department: storedUserInfo.department || '计算机学院',
+  department: storedUserInfo.department || '计算机科学与工程学院（网络空间安全学院）',
   position: storedUserInfo.position || '教学秘书',
   email: storedUserInfo.email || 'admin@university.edu.cn',
   phone: storedUserInfo.phone || '13800138000',

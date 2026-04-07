@@ -13,8 +13,8 @@
 
       <!-- 搜索表单 -->
       <el-form :inline="true" :model="queryForm" class="search-form">
-        <el-form-item label="姓名">
-          <el-input v-model="queryForm.name" placeholder="请输入姓名" clearable />
+        <el-form-item label="学号">
+          <el-input v-model="queryForm.studentNo" placeholder="请输入学号" clearable />
         </el-form-item>
         <el-form-item label="学院">
           <el-select v-model="queryForm.college" placeholder="请选择学院" clearable class="select-wide">
@@ -44,17 +44,16 @@
       <!-- 表格 -->
       <el-table :data="tableData" v-loading="loading" stripe border>
         <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="studentNo" label="学号" width="140" />
-        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column prop="studentNo" label="学号" width="180" />
         <el-table-column prop="gender" label="性别" width="60">
           <template #default="{ row }">
             {{ row.gender === 1 ? '男' : '女' }}
           </template>
         </el-table-column>
-        <el-table-column prop="college" label="学院" width="120" />
-        <el-table-column prop="major" label="专业" width="150" />
+        <el-table-column prop="college" label="学院" width="320" />
+        <el-table-column prop="major" label="专业" width="350" />
         <el-table-column prop="className" label="班级" width="120" />
-        <el-table-column prop="enrollmentYear" label="入学年份" width="100" />
+        <el-table-column prop="enrollmentYear" label="入学年份" width="150" />
         <el-table-column prop="studentStatus" label="学籍状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.studentStatus)" size="small">
@@ -62,8 +61,8 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="gpa" label="GPA" width="80" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="gpa" label="GPA" width="180" />
+        <el-table-column label="操作" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="viewProfile(row)">
               画像
@@ -101,13 +100,6 @@
               <el-input v-model="formData.studentNo" :disabled="isEdit" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="姓名" prop="name">
-              <el-input v-model="formData.name" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="性别" prop="gender">
               <el-radio-group v-model="formData.gender">
@@ -182,7 +174,7 @@ const isEdit = ref(false)
 const formRef = ref(null)
 
 const queryForm = reactive({
-  name: '',
+  studentNo: '',
   college: '',
   major: '',
   enrollmentYear: null
@@ -190,14 +182,13 @@ const queryForm = reactive({
 
 const pagination = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: 0
 })
 
 const formData = reactive({
   id: null,
   studentNo: '',
-  name: '',
   gender: 1,
   birthday: '',
   phone: '',
@@ -210,7 +201,6 @@ const formData = reactive({
 
 const rules = {
   studentNo: [{ required: true, message: '请输入学号', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
   college: [{ required: true, message: '请输入学院', trigger: 'blur' }],
   major: [{ required: true, message: '请输入专业', trigger: 'blur' }]
 }
@@ -230,8 +220,8 @@ const fetchList = () => {
   let filtered = [...allStudents]
 
   // 模拟过滤
-  if (queryForm.name) {
-    filtered = filtered.filter(s => s.name.includes(queryForm.name))
+  if (queryForm.studentNo) {
+    filtered = filtered.filter(s => s.studentNo.includes(queryForm.studentNo))
   }
   if (queryForm.college) {
     filtered = filtered.filter(s => s.college === queryForm.college)

@@ -41,8 +41,7 @@
             <span>最近学业预警</span>
           </template>
           <el-table :data="warnings" style="width: 100%">
-            <el-table-column prop="studentNo" label="学号" width="120" />
-            <el-table-column prop="studentName" label="姓名" width="100" />
+            <el-table-column prop="studentNo" label="学号" width="160" />
             <el-table-column prop="warningType" label="预警类型" width="100">
               <template #default="{ row }">
                 <el-tag :type="getWarningType(row.level)" size="small">
@@ -62,10 +61,10 @@
           <div v-for="profile in sampleProfiles" :key="profile.studentNo"
                class="profile-item" @click="goToProfile(profile.studentNo)">
             <el-avatar :size="40" :style="{ background: profile.avatarColor }">
-              {{ profile.name[0] }}
+              {{ profile.studentNo[0] }}
             </el-avatar>
             <div class="profile-info">
-              <div class="profile-name">{{ profile.name }}</div>
+              <div class="profile-name">{{ profile.studentNo }}</div>
               <div class="profile-meta">
                 <span class="profile-type">{{ profile.profileType }}</span>
                 <span class="profile-gpa">GPA: {{ profile.gpa }}</span>
@@ -104,9 +103,9 @@ const warnings = ref(allWarnings.slice(0, 5))
 
 // 样本画像（使用核心学生的画像数据）
 const sampleProfiles = ref([
-  { studentNo: '2021001001', name: '张三', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
-  { studentNo: '2021001002', name: '李四', profileType: '实践应用型', gpa: 3.12, abilityLevel: 'B+', abilityType: 'warning', avatarColor: '#67c23a' },
-  { studentNo: '2021001003', name: '王五', profileType: '复合探索型', gpa: 3.42, abilityLevel: 'B+', abilityType: 'info', avatarColor: '#e6a23c' }
+  { studentNo: '2020010906005', profileType: '学术研究型', gpa: 3.85, abilityLevel: 'A', abilityType: 'success', avatarColor: '#409eff' },
+  { studentNo: '2020010906012', profileType: '实践应用型', gpa: 3.12, abilityLevel: 'B+', abilityType: 'warning', avatarColor: '#67c23a' },
+  { studentNo: '2020010906013', profileType: '复合探索型', gpa: 3.42, abilityLevel: 'B+', abilityType: 'info', avatarColor: '#e6a23c' }
 ])
 
 const collegeChartRef = ref(null)
