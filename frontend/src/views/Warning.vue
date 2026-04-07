@@ -39,8 +39,8 @@
       <el-table :data="tableData" stripe border v-loading="loading">
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="studentNo" label="学号" width="160" />
-        <el-table-column prop="college" label="学院" width="120" />
-        <el-table-column prop="major" label="专业" width="150" />
+        <el-table-column prop="college" label="学院" width="320" />
+        <el-table-column prop="major" label="专业" width="300" />
         <el-table-column prop="warningType" label="预警类型" width="100">
           <template #default="{ row }">
             <el-tag :type="getWarningTypeTag(row.warningType)">

@@ -62,7 +62,7 @@
             <span v-if="row.participants.length > 3">等{{ row.participants.length }}人</span>
           </template>
         </el-table-column>
-        <el-table-column prop="award" label="奖项" width="100">
+        <el-table-column prop="award" label="奖项" width="150">
           <template #default="{ row }">
             <span v-if="row.award" class="award-text">{{ row.award }}</span>
             <span v-else>-</span>
