@@ -463,15 +463,19 @@ export const coreStudents = [
 ]
 
 // 扩展为500个学生
+// 排除coreStudents中已有的学号，避免重复
+const coreStudentNos = new Set(coreStudents.map(s => s.studentNo))
+const generatedStudents = []
+for (let i = 5; generatedStudents.length < 495 && i < realStudentNos.length; i++) {
+  const studentNo = realStudentNos[i]
+  if (coreStudentNos.has(studentNo)) continue
+  const name = studentNames[i % studentNames.length]
+  const parsedInfo = parseStudentNo(studentNo)
+  generatedStudents.push(createStudent(studentNo, name, parsedInfo, i))
+}
 export const allStudents = [
   ...coreStudents,
-  ...Array.from({ length: 495 }, (_, i) => {
-    const index = i + 5
-    const studentNo = realStudentNos[index]
-    const name = studentNames[index % studentNames.length]
-    const parsedInfo = parseStudentNo(studentNo)
-    return createStudent(studentNo, name, parsedInfo, index)
-  })
+  ...generatedStudents
 ]
 
 // 学业预警数据（分布不同学院） - 使用真实学院专业名称

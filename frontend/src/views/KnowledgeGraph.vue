@@ -6,7 +6,7 @@
           <span>学生知识图谱</span>
           <div class="header-actions">
             <el-select v-model="selectedStudent" placeholder="选择学生" filterable @change="onStudentChange" class="student-select">
-              <el-option v-for="student in students" :key="student.studentNo" :label="student.studentNo" :value="student.studentNo" />
+              <el-option v-for="student in filteredStudents" :key="student.studentNo" :label="student.studentNo" :value="student.studentNo" />
             </el-select>
             <el-button-group>
               <el-button @click="openAddDialog('static')">添加静态关系</el-button>
@@ -137,6 +137,20 @@ const selectedStudent = ref('')
 
 // 学生列表（从统一数据源获取）
 const students = ref(allStudents)
+const filteredStudents = ref([...allStudents])
+
+// 下拉框搜索过滤
+const filterStudents = (query) => {
+  if (!query) {
+    filteredStudents.value = [...students.value]
+    return
+  }
+  const lowerQuery = query.toLowerCase()
+  filteredStudents.value = students.value.filter(s =>
+    s.studentNo.toLowerCase().includes(lowerQuery) ||
+    s.name.toLowerCase().includes(lowerQuery)
+  )
+}
 
 // 活动类型到关系类型的映射
 const getRelationType = (activityType) => {

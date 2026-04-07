@@ -10,9 +10,6 @@
           <div class="chart-section">
             <div ref="collegeChartRef" class="chart-item full"></div>
           </div>
-          <div class="chart-section">
-            <div ref="majorChartRef" class="chart-item full"></div>
-          </div>
         </el-tab-pane>
 
         <el-tab-pane label="成绩分析" name="score">
@@ -66,12 +63,11 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
-import { allStudents, allWarnings, collegeStats, majorStats } from '@/data/mockData'
+import { allStudents, allWarnings, collegeStats } from '@/data/mockData'
 
 const activeTab = ref('student')
 
 const collegeChartRef = ref(null)
-const majorChartRef = ref(null)
 const gpaDistChartRef = ref(null)
 const scoreTrendChartRef = ref(null)
 const courseChartRef = ref(null)
@@ -98,12 +94,6 @@ const chartConfig = {
     type: 'bar',
     data: collegeStats,
     color: '#409eff'
-  },
-  major: {
-    title: '各专业学生分布',
-    type: 'bar',
-    data: majorStats.slice(0, 7),
-    color: '#67c23a'
   },
   gpaDist: {
     title: 'GPA分数段分布',
@@ -249,9 +239,6 @@ const initAllCharts = () => {
   nextTick(() => {
     if (!charts.college && collegeChartRef.value) {
       charts.college = initChart(collegeChartRef.value, chartConfig.college)
-    }
-    if (!charts.major && majorChartRef.value) {
-      charts.major = initChart(majorChartRef.value, chartConfig.major)
     }
     if (!charts.gpaDist && gpaDistChartRef.value) {
       charts.gpaDist = initChart(gpaDistChartRef.value, chartConfig.gpaDist)
