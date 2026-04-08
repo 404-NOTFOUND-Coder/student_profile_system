@@ -1,0 +1,72 @@
+# MySQL Database Initialization Script
+
+CREATE DATABASE IF NOT EXISTS student_profile DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE student_profile;
+
+-- Student Table
+CREATE TABLE IF NOT EXISTS student (
+    student_no VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(50),
+    gender INT,
+    birthday VARCHAR(20),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    college VARCHAR(200),
+    major VARCHAR(100),
+    class_name VARCHAR(50),
+    enrollment_year INT,
+    student_status INT,
+    profile_score DOUBLE,
+    knowledge_entropy DOUBLE,
+    graph_edit_distance DOUBLE,
+    activity_score DOUBLE,
+    profile_type VARCHAR(50),
+    ability_level VARCHAR(10),
+    personality VARCHAR(500),
+    academic_tags VARCHAR(500),
+    practice_tags VARCHAR(500),
+    suggestion_tags VARCHAR(500),
+    academic_trend_status VARCHAR(20),
+    academic_trend_desc VARCHAR(200),
+    create_time DATETIME,
+    update_time DATETIME
+);
+
+-- Activity Table
+CREATE TABLE IF NOT EXISTS activity (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200),
+    type VARCHAR(50),
+    level VARCHAR(20),
+    time VARCHAR(20),
+    description VARCHAR(500),
+    participants VARCHAR(2000),
+    award VARCHAR(100),
+    create_time DATETIME
+);
+
+-- Warning Table
+CREATE TABLE IF NOT EXISTS warning (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_no VARCHAR(20),
+    college VARCHAR(200),
+    major VARCHAR(100),
+    warning_type VARCHAR(50),
+    level INT,
+    level_name VARCHAR(20),
+    warning_message VARCHAR(500),
+    suggest_action VARCHAR(500),
+    create_time DATETIME
+);
+
+-- Profile Record Table
+CREATE TABLE IF NOT EXISTS profile_record (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_no VARCHAR(20),
+    report_content TEXT,
+    profile_type VARCHAR(50),
+    knowledge_entropy DOUBLE,
+    graph_edit_distance DOUBLE,
+    create_time DATETIME
+);
